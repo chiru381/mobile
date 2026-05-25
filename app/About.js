@@ -6,9 +6,37 @@ import Divider from '../components/Divider'
 import Header from '../components/Header'
 import ScreenWrapper from '../components/ScreenWrapper'
 import { theme } from '../constants/theme'
+import { useEffect, useState } from 'react'
+import apiService from '../utils/apiService'
 
 export default function About() {
+  const [aboutData, setAboutData] = useState(null)
+  const [loading, setLoading] = useState(true)
   const router = useRouter()
+
+  useEffect(() => {
+  fetchAboutUs()
+}, [])
+
+const fetchAboutUs = async () => {
+  try {
+    setLoading(true)
+    const response = await apiService.getAboutUs()
+    setAboutData(response?.data || response)
+  } catch (error) {
+    console.log('About Us Error:', error)
+  } finally {
+    setLoading(false)
+  }
+}
+
+if (loading) {
+  return (
+    <ScreenWrapper>
+      <Text>Loading...</Text>
+    </ScreenWrapper>
+  )
+}
 
   return (
     <ScreenWrapper scrollable padding="md">
@@ -21,17 +49,22 @@ export default function About() {
       {/* App Logo & Name */}
       <View style={styles.heroSection}>
         <Text style={styles.appEmoji}>💖</Text>
-        <Text style={styles.appName}>Memory App</Text>
-        <Text style={styles.tagline}>Preserve Your Precious Moments</Text>
-        <Text style={styles.version}>Version 1.0.0</Text>
+        <Text style={styles.appName}>
+          {aboutData?.appName || 'Memory App'}
+        </Text>
+        <Text style={styles.tagline}>
+          {aboutData?.tagline || 'Preserve Your Precious Moments'}
+        </Text>
+        <Text style={styles.version}>
+          Version {aboutData?.version || '1.0.0'}
+        </Text>
       </View>
 
       {/* Description */}
       <Card padding="lg" shadow="md" style={styles.descriptionCard}>
         <Text style={styles.cardTitle}>About Memory App</Text>
         <Text style={styles.description}>
-          Memory App is your personal digital keeper of precious moments. Store, organize, and relive your favorite
-          memories with advanced features like mood tracking, travel logs, and secure app lock protection.
+          {aboutData?.description || 'Memory App is your personal digital keeper of precious moments. Store, organize, and relive your favorite memories with advanced features like mood tracking, travel logs, and secure app lock protection.'}
         </Text>
       </Card>
 

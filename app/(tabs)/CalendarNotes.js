@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import AppButton from '../../components/AppButton'
 import Card from '../../components/Card'
@@ -7,15 +7,30 @@ import Header from '../../components/Header'
 import ScreenWrapper from '../../components/ScreenWrapper'
 import AppTextInput from '../../components/TextInput'
 import { theme } from '../../constants/theme'
+import apiService from '../../utils/apiService'
 
 export default function CalendarNotes() {
   const [selectedDate, setSelectedDate] = useState(null)
   const [noteText, setNoteText] = useState('')
-  const [notes, setNotes] = useState([
-    { date: '2024-05-24', title: 'Beautiful Day', content: 'Had a wonderful time at the park today.' },
-    { date: '2024-05-23', title: 'Family Time', content: 'Spent evening with family, great memories.' },
-    { date: '2024-05-22', title: 'Work Achievement', content: 'Successfully completed the project!' },
-  ])
+  const [notes, setNotes] = useState([])
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    fetchNotes()
+  }, [])
+
+  const fetchNotes = async () => {
+    try {
+      setLoading(true)
+      const response = await apiService.getNotes()
+      const data = response?.data || []
+      setNotes(data)
+    } catch (error) {
+      console.log('Get Notes Error:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const getDaysInMonth = (date = new Date()) =>
     new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
@@ -29,34 +44,42 @@ export default function CalendarNotes() {
     return days
   }
 
-  const handleSaveNote = () => {
-    if (selectedDate && noteText.trim()) {
-      const existingNote = notes.find((n) => n.date === selectedDate)
-
-      if (existingNote) {
-        setNotes(
-          notes.map((n) =>
-            n.date === selectedDate ? { ...n, content: noteText } : n
-          )
-        )
-      } else {
-        setNotes([
-          ...notes,
-          { date: selectedDate, title: 'Note', content: noteText },
-        ])
+  const handleSaveNote = async () => {
+    try {
+      if (!selectedDate || !noteText.trim()) {
+        return
       }
-
+      const payload = {
+        title: `Note for ${selectedDate}`,
+        description: noteText,
+        category: 'Diary',
+        tags: ['memory'],
+        color: '#ffcc00',
+        pinned: false,
+      }
+      await apiService.createNote(payload)
       setNoteText('')
       setSelectedDate(null)
+      fetchNotes()
+    } catch (error) {
+      console.log('Create Note Error:', error)
     }
   }
 
-  const getNoteForDate = (date) => notes.find((n) => n.date === date)
+  const getNoteForDate = (date) => notes.find((n) => n.title === `Note for ${date}`)
 
   const renderCalendarDay = ({ item }) => {
     const dateStr = `2024-05-${String(item.date).padStart(2, '0')}`
     const note = getNoteForDate(dateStr)
     const isSelected = selectedDate === dateStr
+
+    if (loading) {
+      return (
+        <ScreenWrapper>
+          <Text>Loading notes...</Text>
+        </ScreenWrapper>
+      )
+    }
 
     return (
       <TouchableOpacity
@@ -80,7 +103,7 @@ export default function CalendarNotes() {
       <Text style={styles.noteDate}>{item.date}</Text>
       <Text style={styles.noteTitle}>{item.title}</Text>
       <Text style={styles.noteContent} numberOfLines={3}>
-        {item.content}
+        {item.description}
       </Text>
     </Card>
   )

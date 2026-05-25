@@ -1,12 +1,13 @@
-import { SafeAreaView, ScrollView, StyleSheet, View } from 'react-native'
+import { ScrollView, StyleSheet, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { theme } from '../constants/theme'
 
-export default function ScreenWrapper({ 
-  children, 
+export default function ScreenWrapper({
+  children,
   scrollable = true,
   padding = 'base',
   noPadding = false,
-  withSafeArea = true 
+  withSafeArea = true,
 }) {
   const paddingMap = {
     sm: theme.sizes.sm,
@@ -18,34 +19,49 @@ export default function ScreenWrapper({
   const containerPadding = noPadding ? 0 : paddingMap[padding]
 
   const content = (
-    <View style={[styles.container, { padding: containerPadding }]}>
+    <View
+      style={[
+        styles.container,
+        {
+          padding: containerPadding,
+          paddingBottom: 100, // IMPORTANT
+        },
+      ]}
+    >
       {children}
     </View>
   )
 
   if (scrollable) {
     return (
-      <ScrollView
-        contentContainerStyle={styles.scrollContainer}
-        showsVerticalScrollIndicator={false}
-      >
-        {withSafeArea ? <SafeAreaView>{content}</SafeAreaView> : content}
-      </ScrollView>
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          showsVerticalScrollIndicator={false}
+        >
+          {content}
+        </ScrollView>
+      </SafeAreaView>
     )
   }
 
-  return withSafeArea ? (
-    <SafeAreaView style={styles.scrollContainer}>{content}</SafeAreaView>
-  ) : (
-    content
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      {content}
+    </SafeAreaView>
   )
 }
 
 const styles = StyleSheet.create({
-  scrollContainer: {
-    flexGrow: 1,
+  safeArea: {
+    flex: 1,
     backgroundColor: theme.colors.bg,
   },
+
+  scrollContainer: {
+    flexGrow: 1,
+  },
+
   container: {
     flex: 1,
     backgroundColor: theme.colors.bg,

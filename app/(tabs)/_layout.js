@@ -4,23 +4,30 @@ import { theme } from '../../constants/theme'
 
 export default function TabLayout() {
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: theme.colors.primary,
-        tabBarInactiveTintColor: theme.colors.subText,
-        tabBarStyle: {
-          backgroundColor: theme.colors.bgLight,
-          borderTopColor: theme.colors.border,
-          borderTopWidth: 1,
-          paddingBottom: 8,
-          height: 60,
-        },
-        tabBarLabelStyle: {
-          fontSize: 12,
-          marginTop: 4,
-        },
-      }}
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+
+          tabBarActiveTintColor: theme.colors.primary,
+          tabBarInactiveTintColor: theme.colors.subText,
+
+          tabBarHideOnKeyboard: true,
+
+          tabBarStyle: {
+            backgroundColor: theme.colors.bgLight,
+            borderTopColor: theme.colors.border,
+            borderTopWidth: 1,
+
+            height: 130,
+            paddingBottom: 12,
+            paddingTop: 8,
+          },
+
+          tabBarLabelStyle: {
+            fontSize: 12,
+            marginTop: 4,
+          },
+        }}
     >
       {/* Home Tab */}
       <Tabs.Screen

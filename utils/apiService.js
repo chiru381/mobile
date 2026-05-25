@@ -1,6 +1,6 @@
 // API configuration and service
 
-const API_BASE_URL = 'http://10.115.44.49:5000/api'
+const API_BASE_URL = 'http://192.168.2.103:5000/api'
 
 async function request(url, options = {}) {
   const res = await fetch(url, options)
@@ -200,6 +200,136 @@ export const apiService = {
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(moodData),
+    })
+  },
+
+
+
+   // About Us APIs
+  getAboutUs: async () => {
+    return await request(`${API_BASE_URL}/about-us`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+  },
+
+  createAboutUs: async (aboutData) => {
+    return await request(`${API_BASE_URL}/about-us`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(aboutData),
+    })
+  },
+
+  updateAboutUs: async (id, aboutData) => {
+    return await request(`${API_BASE_URL}/about-us/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(aboutData),
+    })
+  },
+
+  // ================= NOTES APIs =================
+
+  getNotes: async () => {
+    return await request(`${API_BASE_URL}/notes`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+  },
+
+  getSingleNote: async (id) => {
+    return await request(`${API_BASE_URL}/notes/${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+  },
+
+  createNote: async (noteData) => {
+    return await request(`${API_BASE_URL}/notes`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(noteData),
+    })
+  },
+
+  updateNote: async (id, noteData) => {
+    return await request(`${API_BASE_URL}/notes/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(noteData),
+    })
+  },
+
+  deleteNote: async (id) => {
+    return await request(`${API_BASE_URL}/notes/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+  },
+
+  // ================= MOOD APIs =================
+
+  getMoods: async () => {
+    return await request(`${API_BASE_URL}/moods`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+  },
+
+  getSingleMood: async (id) => {
+    return await request(`${API_BASE_URL}/moods/${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+  },
+
+  createMood: async (moodData) => {
+    return await request(`${API_BASE_URL}/moods`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(moodData),
+    })
+  },
+
+  updateMood: async (id, moodData) => {
+    return await request(`${API_BASE_URL}/moods/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(moodData),
+    })
+  },
+
+  deleteMood: async (id) => {
+    return await request(`${API_BASE_URL}/moods/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
     })
   },
 }
