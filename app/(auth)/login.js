@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { useState } from 'react'
 import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native'
+import AIToy from '../../components/AIToy'
 import AppButton from '../../components/AppButton'
 import Header from '../../components/Header'
 import ScreenWrapper from '../../components/ScreenWrapper'
@@ -72,6 +73,9 @@ export default function Login() {
       style={styles.container}
     >
       <ScreenWrapper scrollable padding="lg">
+        <AIToy
+          message="Welcome back to your memory app!"
+        />
         <Header title="Login" />
 
         <View style={styles.formContainer}>
