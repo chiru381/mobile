@@ -62,6 +62,20 @@ export default function TabLayout() {
         }}
       />
 
+      <Tabs.Screen
+        name="Upload"
+        options={{
+          title: 'Upload',
+          tabBarIcon: ({ color }) => (
+            <Ionicons
+              name="cloud-upload"
+              size={24}
+              color={color}
+            />
+          ),
+        }}
+      />
+
       {/* Calendar Tab */}
       <Tabs.Screen
         name="CalendarNotes"

@@ -120,25 +120,62 @@ export default function Home() {
       </View>
 
       {/* Mood Status */}
-      <Card
-        padding="base"
-        shadow="md"
-        style={styles.moodCard}
-        onPress={() => router.push('/Mood')}
-      >
-        <View style={styles.moodContent}>
-          <Ionicons name="happy" size={40} color={theme.colors.warning} />
-          <View style={styles.moodText}>
-            <Text style={styles.moodLabel}>How are you feeling?</Text>
-            <Text style={styles.moodValue}>{stats.mood}</Text>
-          </View>
-          <Ionicons
-            name="chevron-forward"
-            size={24}
-            color={theme.colors.subText}
-          />
-        </View>
-      </Card>
+      {/* Mood Status */}
+
+<Card
+  padding="lg"
+  shadow="md"
+  style={styles.moodCard}
+  onPress={() => router.push('/Mood')}
+>
+
+  <View style={styles.moodContent}>
+
+    {/* ICON */}
+
+    <View style={styles.moodIconContainer}>
+
+      <Ionicons
+        name="happy"
+        size={38}
+        color={theme.colors.warning}
+      />
+
+    </View>
+
+    {/* TEXT */}
+
+    <View style={styles.moodText}>
+
+      <Text style={styles.moodLabel}>
+        TODAY'S MOOD
+      </Text>
+
+      <Text style={styles.moodValue}>
+        {stats.mood}
+      </Text>
+
+      <Text style={styles.moodSubText}>
+        Tap to track your feelings
+      </Text>
+
+    </View>
+
+    {/* RIGHT ICON */}
+
+    <View style={styles.moodArrowBox}>
+
+      <Ionicons
+        name="chevron-forward"
+        size={22}
+        color={theme.colors.subText}
+      />
+
+    </View>
+
+  </View>
+
+</Card>
 
       {/* Features Grid */}
       <View style={styles.featuresSection}>
@@ -197,106 +234,239 @@ export default function Home() {
 }
 
 const styles = StyleSheet.create({
+
+  // ================= STATS =================
+
   statsContainer: {
-    marginVertical: theme.sizes.lg,
+    marginTop: theme.sizes.base,
+    marginBottom: theme.sizes.lg,
   },
+
   statsGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-  },
-  statItem: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  statNumber: {
-    fontSize: theme.sizes.h4,
-    fontWeight: '700',
-    color: theme.colors.primary,
-    marginBottom: theme.sizes.xs,
-  },
-  statLabel: {
-    fontSize: theme.sizes.sm,
-    color: theme.colors.subText,
-  },
-  divider: {
-    width: 1,
-    height: 40,
-    backgroundColor: theme.colors.border,
-  },
-  moodCard: {
-    marginVertical: theme.sizes.base,
-  },
-  moodContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  moodText: {
+
+  statItem: {
     flex: 1,
-    marginHorizontal: theme.sizes.base,
+    alignItems: 'center',
+    paddingVertical: theme.sizes.sm,
   },
-  moodLabel: {
-    fontSize: theme.sizes.sm,
+
+  statNumber: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: theme.colors.primary,
+    marginBottom: 6,
+  },
+
+  statLabel: {
+    fontSize: 13,
     color: theme.colors.subText,
-    marginBottom: theme.sizes.xs,
+    fontWeight: '500',
   },
-  moodValue: {
-    fontSize: theme.sizes.h5,
-    fontWeight: '700',
-    color: theme.colors.text,
+
+  divider: {
+    width: 1,
+    height: 45,
+    backgroundColor: theme.colors.border,
   },
+
+  // ================= MOOD CARD =================
+
+moodCard: {
+  marginBottom: theme.sizes.lg,
+
+  borderRadius: 26,
+
+  backgroundColor: theme.colors.card,
+
+  borderWidth: 1,
+  borderColor: `${theme.colors.warning}25`,
+
+  overflow: 'hidden',
+
+  shadowColor: '#000',
+  shadowOffset: {
+    width: 0,
+    height: 6,
+  },
+  shadowOpacity: 0.08,
+  shadowRadius: 8,
+
+  elevation: 4,
+},
+
+moodContent: {
+  flexDirection: 'row',
+  alignItems: 'center',
+
+  paddingVertical: 6,
+},
+
+// LEFT ICON BOX
+
+moodIconContainer: {
+  width: 72,
+  height: 72,
+
+  borderRadius: 24,
+
+  backgroundColor: `${theme.colors.warning}18`,
+
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+
+// TEXT AREA
+
+moodText: {
+  flex: 1,
+  marginLeft: 18,
+},
+
+moodLabel: {
+  fontSize: 13,
+  fontWeight: '600',
+
+  color: theme.colors.subText,
+
+  marginBottom: 6,
+
+  letterSpacing: 0.3,
+},
+
+moodValue: {
+  fontSize: 28,
+  fontWeight: '800',
+
+  color: theme.colors.text,
+},
+
+moodSubText: {
+  marginTop: 4,
+
+  fontSize: 13,
+
+  color: theme.colors.subText,
+},
+
+// RIGHT ARROW
+
+moodArrowBox: {
+  width: 42,
+  height: 42,
+
+  borderRadius: 14,
+
+  backgroundColor: theme.colors.bgLight,
+
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+
+  // ================= FEATURES =================
+
   featuresSection: {
-    marginVertical: theme.sizes.lg,
+    marginBottom: 24,
   },
+
   sectionTitle: {
-    fontSize: theme.sizes.h5,
+    fontSize: 22,
     fontWeight: '700',
     color: theme.colors.text,
     marginBottom: theme.sizes.base,
   },
-  featureCard: {
-    alignItems: 'center',
-    paddingVertical: theme.sizes.base,
-  },
-  featureIconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: theme.sizes.radiusLg,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: theme.sizes.sm,
-  },
-  featureTitle: {
-    fontSize: theme.sizes.sm,
-    color: theme.colors.text,
-    textAlign: 'center',
-    fontWeight: '500',
-  },
+
   columnWrapper: {
     justifyContent: 'space-between',
+    marginBottom: 12,
   },
+
+  featureCard: {
+  width: '48%',
+  backgroundColor: theme.colors.card,
+  borderRadius: 22,
+
+  paddingVertical: 22,
+
+  alignItems: 'center',
+
+  borderWidth: 1,
+  borderColor: theme.colors.border,
+
+  shadowColor: '#000',
+  shadowOffset: {
+    width: 0,
+    height: 3,
+  },
+
+  shadowOpacity: 0.08,
+  shadowRadius: 5,
+
+  elevation: 3,
+},
+
+  featureIconContainer: {
+    width: 70,
+    height: 70,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+
+  featureTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: theme.colors.text,
+    textAlign: 'center',
+    paddingHorizontal: 8,
+    lineHeight: 20,
+  },
+
+  // ================= QUICK ACTIONS =================
+
   quickActionsSection: {
-    marginVertical: theme.sizes.lg,
-    marginBottom: theme.sizes.xxl,
+    marginBottom: 30,
   },
+
   quickActionsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    gap: theme.sizes.base,
+    justifyContent: 'space-between',
+    marginTop: 4,
   },
+
   quickActionBtn: {
     flex: 1,
-    alignItems: 'center',
-    paddingVertical: theme.sizes.base,
     backgroundColor: theme.colors.card,
-    borderRadius: theme.sizes.radiusMd,
+    borderRadius: 18,
+
+    paddingVertical: 18,
+    alignItems: 'center',
+
+    marginHorizontal: 4,
+
     borderWidth: 1,
     borderColor: theme.colors.border,
+
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+
+    elevation: 2,
   },
+
   quickActionText: {
-    fontSize: theme.sizes.xs,
+    marginTop: 8,
+    fontSize: 12,
+    fontWeight: '600',
     color: theme.colors.text,
-    marginTop: theme.sizes.xs,
   },
+
 })

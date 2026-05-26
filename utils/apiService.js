@@ -332,6 +332,39 @@ export const apiService = {
       },
     })
   },
+
+  uploadFile: async (fileData) => {
+    const formData = new FormData()
+    formData.append('file', {
+      uri: fileData.uri,
+      type: fileData.type,
+      name: fileData.fileName || 'upload.jpg',
+    })
+    const response = await fetch(
+      `${API_BASE_URL}/upload`,
+      {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    )
+    const data = await response.json()
+    if (!response.ok) {
+      throw new Error(data.message || 'Upload failed')
+    }
+    return data
+  },
+
+  getUploads: async () => {
+    return await request(`${API_BASE_URL}/upload`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+  },
 }
 
 export default apiService

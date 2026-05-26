@@ -1,194 +1,491 @@
 import { Ionicons } from '@expo/vector-icons'
-import { useState } from 'react'
+
+import { useCallback, useState } from 'react'
+
 import {
-    FlatList,
-    Image,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  FlatList,
+  Image,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native'
-import AppButton from '../../components/AppButton'
-import EmptyState from '../../components/EmptyState'
+
+import { Video } from 'expo-av'
+
+import { useFocusEffect } from 'expo-router'
+
 import Header from '../../components/Header'
 import ScreenWrapper from '../../components/ScreenWrapper'
+
 import { theme } from '../../constants/theme'
+
 import { responsive } from '../../utils/responsive'
 
+import apiService from '../../utils/apiService'
+
 export default function Gallery() {
-  const [selectedImage, setSelectedImage] = useState(null)
-  const [galleryData, setGalleryData] = useState([
-    { id: '1', uri: 'https://picsum.photos/400/400?random=1', date: '2024-05-20' },
-    { id: '2', uri: 'https://picsum.photos/400/400?random=2', date: '2024-05-19' },
-    { id: '3', uri: 'https://picsum.photos/400/400?random=3', date: '2024-05-18' },
-    { id: '4', uri: 'https://picsum.photos/400/400?random=4', date: '2024-05-17' },
-    { id: '5', uri: 'https://picsum.photos/400/400?random=5', date: '2024-05-16' },
-    { id: '6', uri: 'https://picsum.photos/400/400?random=6', date: '2024-05-15' },
-  ])
+
+  const [galleryData, setGalleryData] = useState([])
+
+  const [loading, setLoading] = useState(true)
+
+  const [openImages, setOpenImages] = useState(false)
+
+  const [openVideos, setOpenVideos] = useState(false)
+
+  const [selectedItem, setSelectedItem] = useState(null)
+
+  // ================= GET FILES =================
+
+  const getGalleryFiles = async () => {
+
+    try {
+
+      setLoading(true)
+
+      const response = await apiService.getUploads()
+
+      setGalleryData(response.data || [])
+
+    } catch (error) {
+
+      console.log(error)
+
+    } finally {
+
+      setLoading(false)
+    }
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      getGalleryFiles()
+    }, [])
+  )
+
+  // ================= FILTER =================
+
+  const imageData = galleryData.filter(
+    item => item.fileType === 'image'
+  )
+
+  const videoData = galleryData.filter(
+    item => item.fileType === 'video'
+  )
+
+  // ================= GRID =================
 
   const gridColumns = responsive.getGridColumns()
-  const imageSize = (responsive.width - theme.sizes.lg * 2 - theme.sizes.sm * (gridColumns - 1)) / gridColumns
+
+  const imageSize =
+    (
+      responsive.width
+      - theme.sizes.lg * 2
+      - theme.sizes.sm * (gridColumns - 1)
+    ) / gridColumns
+
+  // ================= RENDER ITEM =================
 
   const renderGalleryItem = ({ item }) => (
+
     <TouchableOpacity
-      style={[styles.imageWrapper, { width: imageSize, height: imageSize }]}
-      onPress={() => setSelectedImage(item)}
-      activeOpacity={0.7}
+      style={[
+        styles.imageWrapper,
+        {
+          width: imageSize,
+          height: imageSize,
+        }
+      ]}
+      activeOpacity={0.8}
+      onPress={() => setSelectedItem(item)}
     >
-      <Image source={{ uri: item.uri }} style={styles.image} />
-      <View style={styles.imageOverlay}>
-        <Ionicons name="eye-outline" size={24} color="#fff" />
-      </View>
+
+      {
+        item.fileType === 'image' ? (
+
+          <Image
+            source={{
+              uri: item.fileUrl
+            }}
+            style={styles.image}
+          />
+
+        ) : (
+
+          <View style={styles.videoCard}>
+
+            <Ionicons
+              name="videocam"
+              size={40}
+              color="#fff"
+            />
+
+          </View>
+        )
+      }
+
     </TouchableOpacity>
   )
 
+  // ================= MAIN =================
+
   return (
+
     <ScreenWrapper scrollable padding="md">
-      <Header title="Photo Gallery" subtitle={`${galleryData.length} photos`} />
 
-      {galleryData.length > 0 ? (
-        <FlatList
-          data={galleryData}
-          renderItem={renderGalleryItem}
-          keyExtractor={(item) => item.id}
-          numColumns={gridColumns}
-          scrollEnabled={false}
-          columnWrapperStyle={styles.columnWrapper}
-          contentContainerStyle={styles.flatListContent}
-        />
-      ) : (
-        <EmptyState
-          icon="image-outline"
-          title="No Photos"
-          message="Start capturing your memories"
-          action={
-            <AppButton title="Upload Photo" onPress={() => {}} fullWidth />
-          }
-        />
-      )}
+      <Header
+        title="Gallery"
+        subtitle="Uploaded Files"
+      />
 
-      {/* Image Preview Modal */}
-      <Modal visible={!!selectedImage} transparent animationType="fade">
-        <View style={styles.modalContainer}>
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={() => setSelectedImage(null)}
-          >
-            <Ionicons name="close" size={32} color="#fff" />
-          </TouchableOpacity>
+      {
+        loading ? (
 
-          {selectedImage && (
-            <ScrollView
-              style={styles.modalContent}
-              contentContainerStyle={styles.modalContentContainer}
-              scrollEnabled={false}
+          <View style={styles.loaderContainer}>
+            <ActivityIndicator
+              size="large"
+              color={theme.colors.primary}
+            />
+          </View>
+
+        ) : (
+
+          <>
+
+            {/* ================= IMAGES FOLDER ================= */}
+
+            <TouchableOpacity
+              style={styles.folderCard}
+              activeOpacity={0.8}
+              onPress={() => setOpenImages(!openImages)}
             >
-              <Image
-                source={{ uri: selectedImage.uri }}
-                style={styles.modalImage}
-              />
-              <View style={styles.photoDetails}>
-                <Text style={styles.photoDate}>{selectedImage.date}</Text>
-                <View style={styles.actionButtons}>
-                  <AppButton
-                    title="Delete"
-                    variant="danger"
-                    size="sm"
-                    onPress={() => setSelectedImage(null)}
-                  />
-                  <AppButton
-                    title="Share"
-                    variant="secondary"
-                    size="sm"
-                    onPress={() => {}}
+
+              <View style={styles.folderLeft}>
+
+                <View style={styles.folderIconBox}>
+                  <Ionicons
+                    name="images"
+                    size={40}
+                    color="#4F8EF7"
                   />
                 </View>
+
+                <View>
+
+                  <Text style={styles.folderTitle}>
+                    Images
+                  </Text>
+
+                  <Text style={styles.folderSubtitle}>
+                    {imageData.length} Photos
+                  </Text>
+
+                </View>
+
               </View>
-            </ScrollView>
-          )}
+
+              <Ionicons
+                name={
+                  openImages
+                    ? 'chevron-up'
+                    : 'chevron-down'
+                }
+                size={24}
+                color={theme.colors.text}
+              />
+
+            </TouchableOpacity>
+
+            {
+              openImages && (
+
+                <FlatList
+                  data={imageData}
+                  renderItem={renderGalleryItem}
+                  keyExtractor={(item) => item._id}
+                  numColumns={gridColumns}
+                  scrollEnabled={false}
+                  columnWrapperStyle={styles.columnWrapper}
+                />
+
+              )
+            }
+
+            {/* ================= VIDEOS FOLDER ================= */}
+
+            <TouchableOpacity
+              style={styles.folderCard}
+              activeOpacity={0.8}
+              onPress={() => setOpenVideos(!openVideos)}
+            >
+
+              <View style={styles.folderLeft}>
+
+                <View
+                  style={[
+                    styles.folderIconBox,
+                    {
+                      backgroundColor: '#FFE6E6'
+                    }
+                  ]}
+                >
+                  <Ionicons
+                    name="videocam"
+                    size={40}
+                    color="#FF4D4D"
+                  />
+                </View>
+
+                <View>
+
+                  <Text style={styles.folderTitle}>
+                    Videos
+                  </Text>
+
+                  <Text style={styles.folderSubtitle}>
+                    {videoData.length} Videos
+                  </Text>
+
+                </View>
+
+              </View>
+
+              <Ionicons
+                name={
+                  openVideos
+                    ? 'chevron-up'
+                    : 'chevron-down'
+                }
+                size={24}
+                color={theme.colors.text}
+              />
+
+            </TouchableOpacity>
+
+            {
+              openVideos && (
+
+                <FlatList
+                  data={videoData}
+                  renderItem={renderGalleryItem}
+                  keyExtractor={(item) => item._id}
+                  numColumns={gridColumns}
+                  scrollEnabled={false}
+                  columnWrapperStyle={styles.columnWrapper}
+                />
+
+              )
+            }
+
+          </>
+        )
+      }
+
+      {/* ================= PREVIEW MODAL ================= */}
+
+      <Modal
+        visible={!!selectedItem}
+        transparent
+        animationType="fade"
+      >
+
+        <View style={styles.modalContainer}>
+
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => setSelectedItem(null)}
+          >
+
+            <Ionicons
+              name="close"
+              size={34}
+              color="#fff"
+            />
+
+          </TouchableOpacity>
+
+          {
+            selectedItem && (
+
+              <ScrollView
+                style={styles.modalContent}
+                contentContainerStyle={
+                  styles.modalContentContainer
+                }
+                scrollEnabled={false}
+              >
+
+                {
+                  selectedItem.fileType === 'image' ? (
+
+                    <Image
+                      source={{
+                        uri: selectedItem.fileUrl
+                      }}
+                      style={styles.modalImage}
+                    />
+
+                  ) : (
+
+                    <Video
+                      source={{
+                        uri: selectedItem.fileUrl
+                      }}
+                      style={styles.videoPlayer}
+                      useNativeControls
+                      resizeMode="contain"
+                      shouldPlay
+                    />
+
+                  )
+                }
+
+                <View style={styles.photoDetails}>
+
+                  <Text style={styles.photoDate}>
+                    {
+                      new Date(
+                        selectedItem.createdAt
+                      ).toDateString()
+                    }
+                  </Text>
+
+                </View>
+
+              </ScrollView>
+            )
+          }
+
         </View>
+
       </Modal>
+
     </ScreenWrapper>
   )
 }
 
 const styles = StyleSheet.create({
-  columnWrapper: {
-    justifyContent: 'space-between',
-    marginBottom: theme.sizes.sm,
+
+  loaderContainer: {
+    marginTop: 50,
   },
-  flatListContent: {
-    paddingVertical: theme.sizes.base,
-  },
-  imageWrapper: {
-    borderRadius: theme.sizes.radiusMd,
-    overflow: 'hidden',
+
+  folderCard: {
     backgroundColor: theme.colors.card,
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 18,
+    marginTop: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
+
+  folderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  folderIconBox: {
+    width: 70,
+    height: 70,
+    borderRadius: 18,
+
+    backgroundColor: '#EAF2FF',
+
+    justifyContent: 'center',
+    alignItems: 'center',
+
+    marginRight: 16,
+  },
+
+  folderTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: theme.colors.text,
+  },
+
+  folderSubtitle: {
+    marginTop: 4,
+    color: theme.colors.subText,
+  },
+
+  columnWrapper: {
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+
+  imageWrapper: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: 10,
+  },
+
   image: {
     width: '100%',
     height: '100%',
   },
-  imageOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+
+  videoCard: {
+    flex: 1,
+    backgroundColor: '#222',
     justifyContent: 'center',
     alignItems: 'center',
-    opacity: 0,
   },
+
   modalContainer: {
     flex: 1,
-    backgroundColor: theme.colors.overlay,
+    backgroundColor: 'rgba(0,0,0,0.95)',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: theme.sizes.base,
   },
+
   closeButton: {
     position: 'absolute',
-    top: theme.sizes.lg,
-    right: theme.sizes.lg,
-    zIndex: 10,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    top: 60,
+    right: 20,
+    zIndex: 999,
   },
+
   modalContent: {
     width: '100%',
-    maxHeight: '90%',
   },
+
   modalContentContainer: {
     alignItems: 'center',
   },
+
   modalImage: {
-    width: responsive.getWidth(90),
-    height: responsive.getWidth(90),
-    borderRadius: theme.sizes.radiusLg,
-    marginBottom: theme.sizes.lg,
+    width: responsive.getWidth(92),
+    height: responsive.getWidth(92),
+    borderRadius: 20,
   },
+
+  videoPlayer: {
+    width: responsive.getWidth(92),
+    height: 300,
+    borderRadius: 20,
+    backgroundColor: '#000',
+  },
+
   photoDetails: {
+    marginTop: 20,
+    width: '92%',
     backgroundColor: theme.colors.card,
-    borderRadius: theme.sizes.radiusLg,
-    padding: theme.sizes.lg,
-    width: '100%',
+    borderRadius: 18,
+    padding: 18,
   },
+
   photoDate: {
-    color: theme.colors.subText,
-    fontSize: theme.sizes.sm,
-    marginBottom: theme.sizes.lg,
+    color: theme.colors.text,
+    fontSize: 15,
   },
-  actionButtons: {
-    flexDirection: 'row',
-    gap: theme.sizes.base,
-  },
+
 })

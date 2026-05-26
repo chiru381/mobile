@@ -109,7 +109,7 @@ export default function Mood() {
         selectedMood?.id === item.id && {
           backgroundColor: `${item.color}20`,
           borderColor: item.color,
-          borderWidth: 2,
+          transform: [{ scale: 1.05 }],
         },
       ]}
       onPress={() => setSelectedMood(item)}
@@ -120,27 +120,62 @@ export default function Mood() {
     </TouchableOpacity>
   )
 
-  const renderHistoryItem = ({ item }) => (
-    <Card padding="base" shadow="sm" style={styles.historyCard}>
+  const renderHistoryItem = ({ item }) => {
+
+  // FIX INVALID DATE
+  const rawDate = item.date || item.createdAt
+
+  const formattedDate = rawDate
+    ? new Date(rawDate).toDateString()
+    : 'No Date'
+
+  return (
+
+    <Card
+      padding="base"
+      shadow="sm"
+      style={styles.historyCard}
+    >
+
       <View style={styles.historyContent}>
-        <View>
+
+        {/* LEFT SIDE */}
+
+        <View style={styles.historyLeft}>
+
           <Text style={styles.historyDate}>
-            {new Date(item.date).toDateString()}
+            {formattedDate}
           </Text>
 
-          {item.note ? (
-            <Text style={styles.historyNote}>{item.note}</Text>
-          ) : null}
+          <Text style={styles.historyNote}>
+            {
+              item.note?.trim()
+                ? item.note
+                : 'No notes added'
+            }
+          </Text>
+
         </View>
+
+        {/* RIGHT SIDE */}
 
         <View style={styles.historyMood}>
-          <Text style={styles.historyEmoji}>{item.emoji}</Text>
 
-          <Text style={styles.historyLabel}>{item.mood}</Text>
+          <Text style={styles.historyEmoji}>
+            {item.emoji}
+          </Text>
+
+          <Text style={styles.historyLabel}>
+            {item.mood}
+          </Text>
+
         </View>
+
       </View>
+
     </Card>
   )
+}
 
   return (
     <ScreenWrapper scrollable padding="md">
@@ -157,6 +192,9 @@ export default function Mood() {
           numColumns={5}
           scrollEnabled={false}
           columnWrapperStyle={styles.columnWrapper}
+          contentContainerStyle={{
+            paddingBottom: 6,
+          }}
         />
       </Card>
 
@@ -196,84 +234,179 @@ export default function Mood() {
 }
 
 const styles = StyleSheet.create({
+
+  // ================= MOOD SELECTOR =================
+
   moodSelectorCard: {
-    marginBottom: theme.sizes.lg,
+    marginTop: 10,
+    marginBottom: 20,
+
+    borderRadius: 24,
+
+    backgroundColor: theme.colors.card,
+
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+
+    elevation: 4,
   },
 
   sectionTitle: {
-    fontSize: theme.sizes.h5,
-    fontWeight: '700',
+    fontSize: 22,
+    fontWeight: '800',
     color: theme.colors.text,
-    marginBottom: theme.sizes.base,
+
+    marginBottom: 18,
   },
+
+  // ================= MOOD GRID =================
 
   columnWrapper: {
     justifyContent: 'space-between',
-    marginBottom: theme.sizes.base,
+    marginBottom: 12,
   },
 
   moodOption: {
     flex: 1,
+
     alignItems: 'center',
-    paddingVertical: theme.sizes.base,
-    borderRadius: theme.sizes.radiusMd,
-    marginHorizontal: theme.sizes.xs,
+    justifyContent: 'center',
+
+    paddingVertical: 18,
+
+    marginHorizontal: 4,
+
+    borderRadius: 20,
+
     backgroundColor: theme.colors.bgLight,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
+
+    borderWidth: 1.5,
+    borderColor: 'transparent',
   },
 
   moodEmoji: {
-    fontSize: 32,
-    marginBottom: theme.sizes.xs,
+    fontSize: 34,
+    marginBottom: 8,
   },
 
   moodLabel: {
-    fontSize: theme.sizes.xs,
-    color: theme.colors.subText,
+    fontSize: 12,
+    fontWeight: '700',
+    color: theme.colors.text,
     textAlign: 'center',
   },
 
+  // ================= NOTES =================
+
+  notesContainer: {
+    marginBottom: 20,
+  },
+
+  // ================= HISTORY =================
+
   historySection: {
-    marginTop: theme.sizes.lg,
-    marginBottom: theme.sizes.xxl,
+    marginTop: 28,
+    paddingBottom: 120,
   },
 
-  historyCard: {
-    marginBottom: theme.sizes.sm,
-  },
+historyCard: {
+  marginBottom: 14,
 
-  historyContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
+  borderRadius: 20,
 
-  historyDate: {
-    fontSize: theme.sizes.sm,
+  backgroundColor: theme.colors.card,
+
+  borderWidth: 1,
+  borderColor: theme.colors.border,
+
+  overflow: 'hidden',
+
+  shadowColor: '#000',
+  shadowOffset: {
+    width: 0,
+    height: 3,
+  },
+  shadowOpacity: 0.06,
+  shadowRadius: 5,
+
+  elevation: 3,
+},
+
+historyContent: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+
+  // LEFT + RIGHT PADDING
+  paddingHorizontal: 18,
+  paddingVertical: 16,
+},
+
+historyLeft: {
+  flex: 1,
+  paddingRight: 14,
+},
+
+historyDate: {
+  fontSize: 13,
+  fontWeight: '700',
+
+  color: theme.colors.subText,
+
+  marginBottom: 8,
+},
+
+historyNote: {
+  fontSize: 15,
+  lineHeight: 22,
+
+  color: theme.colors.text,
+},
+
+historyMood: {
+  width: 92,
+  height: 92,
+
+  borderRadius: 24,
+
+  justifyContent: 'center',
+  alignItems: 'center',
+
+  backgroundColor: theme.colors.bgLight,
+
+  borderWidth: 1,
+  borderColor: theme.colors.border,
+},
+
+historyEmoji: {
+  fontSize: 34,
+  marginBottom: 6,
+},
+
+historyLabel: {
+  fontSize: 13,
+  fontWeight: '700',
+
+  color: theme.colors.text,
+},
+
+  // ================= EMPTY STATE =================
+
+  emptyText: {
+    marginTop: 30,
+
+    textAlign: 'center',
+
+    fontSize: 15,
     color: theme.colors.subText,
-    marginBottom: 4,
   },
 
-  historyMood: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-
-  historyEmoji: {
-    fontSize: 24,
-    marginRight: theme.sizes.sm,
-  },
-
-  historyLabel: {
-    fontSize: theme.sizes.base,
-    color: theme.colors.text,
-    fontWeight: '500',
-  },
-
-  historyNote: {
-    fontSize: theme.sizes.sm,
-    color: theme.colors.text,
-    maxWidth: 220,
-  },
 })
