@@ -1,120 +1,347 @@
 import { Ionicons } from '@expo/vector-icons'
-import { useState } from 'react'
-import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import AppButton from '../../components/AppButton'
+
+import { useCallback, useState } from 'react'
+
+import {
+  ActivityIndicator,
+  FlatList,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native'
+
+import { Video } from 'expo-av'
+
+import { useFocusEffect } from 'expo-router'
+
 import EmptyState from '../../components/EmptyState'
 import Header from '../../components/Header'
 import ScreenWrapper from '../../components/ScreenWrapper'
+
 import { theme } from '../../constants/theme'
-import { responsive } from '../../utils/responsive'
+
+import apiService from '../../utils/apiService'
 
 export default function Videos() {
-  const [videosData] = useState([
-    { id: '1', title: 'Birthday Party', thumbnail: 'https://picsum.photos/300/200?random=1', duration: '3:45', date: '2024-05-20' },
-    { id: '2', title: 'Vacation Memories', thumbnail: 'https://picsum.photos/300/200?random=2', duration: '5:12', date: '2024-05-19' },
-    { id: '3', title: 'Family Gathering', thumbnail: 'https://picsum.photos/300/200?random=3', duration: '2:30', date: '2024-05-18' },
-    { id: '4', title: 'Beach Day', thumbnail: 'https://picsum.photos/300/200?random=4', duration: '4:20', date: '2024-05-17' },
-  ])
+
+  const [videosData, setVideosData] = useState([])
+
+  const [loading, setLoading] = useState(true)
+
+  const [selectedVideo, setSelectedVideo] = useState(null)
+
+  // ================= GET VIDEOS =================
+
+  const getVideos = async () => {
+
+    try {
+
+      setLoading(true)
+
+      const response =
+        await apiService.getUploads()
+
+      const onlyVideos =
+        (response?.data || []).filter(
+          item => item.fileType === 'video'
+        )
+
+      setVideosData(onlyVideos)
+
+    } catch (error) {
+
+      console.log(error)
+
+    } finally {
+
+      setLoading(false)
+    }
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      getVideos()
+    }, [])
+  )
+
+  // ================= RENDER VIDEO =================
 
   const renderVideoItem = ({ item }) => (
-    <TouchableOpacity style={styles.videoCard} activeOpacity={0.7}>
+
+    <TouchableOpacity
+      style={styles.videoCard}
+      activeOpacity={0.85}
+      onPress={() => setSelectedVideo(item)}
+    >
+
+      {/* VIDEO THUMB */}
+
       <View style={styles.thumbnailContainer}>
-        <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
-        <View style={styles.playOverlay}>
-          <Ionicons name="play" size={40} color="#fff" />
+
+        <View style={styles.videoThumb}>
+
+          <Ionicons
+            name="videocam"
+            size={48}
+            color="#fff"
+          />
+
         </View>
-        <View style={styles.durationBadge}>
-          <Text style={styles.durationText}>{item.duration}</Text>
+
+        {/* PLAY ICON */}
+
+        <View style={styles.playButton}>
+
+          <Ionicons
+            name="play"
+            size={30}
+            color="#fff"
+          />
+
         </View>
+
       </View>
+
+      {/* INFO */}
+
       <View style={styles.videoInfo}>
-        <Text style={styles.videoTitle} numberOfLines={2}>{item.title}</Text>
-        <Text style={styles.videoDate}>{item.date}</Text>
+
+        <Text
+          style={styles.videoTitle}
+          numberOfLines={1}
+        >
+          {item.fileName || 'Video File'}
+        </Text>
+
+        <Text style={styles.videoDate}>
+          {
+            item.createdAt
+              ? new Date(
+                  item.createdAt
+                ).toDateString()
+              : 'No Date'
+          }
+        </Text>
+
       </View>
+
     </TouchableOpacity>
   )
 
   return (
-    <ScreenWrapper scrollable padding="md">
-      <Header title="Video Memories" subtitle={`${videosData.length} videos`} />
 
-      {videosData.length > 0 ? (
-        <FlatList
-          data={videosData}
-          renderItem={renderVideoItem}
-          keyExtractor={(item) => item.id}
-          scrollEnabled={false}
-          contentContainerStyle={styles.listContent}
-        />
-      ) : (
-        <EmptyState
-          icon="videocam-outline"
-          title="No Videos"
-          message="Record or upload your first video memory"
-          action={<AppButton title="Upload Video" onPress={() => {}} fullWidth />}
-        />
-      )}
+    <ScreenWrapper scrollable padding="md">
+
+      <Header
+        title="Video Memories"
+        subtitle={`${videosData.length} Videos`}
+      />
+
+      {
+        loading ? (
+
+          <View style={styles.loaderContainer}>
+
+            <ActivityIndicator
+              size="large"
+              color={theme.colors.primary}
+            />
+
+          </View>
+
+        ) : videosData.length > 0 ? (
+
+          <FlatList
+            data={videosData}
+            renderItem={renderVideoItem}
+            keyExtractor={(item) => item._id}
+            scrollEnabled={false}
+            contentContainerStyle={
+              styles.listContent
+            }
+          />
+
+        ) : (
+
+          <EmptyState
+            icon="videocam-outline"
+            title="No Videos"
+            message="Upload your first video memory"
+          />
+
+        )
+      }
+
+      {/* ================= VIDEO MODAL ================= */}
+
+      <Modal
+        visible={!!selectedVideo}
+        transparent
+        animationType="fade"
+      >
+
+        <View style={styles.modalContainer}>
+
+          {/* CLOSE */}
+
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => setSelectedVideo(null)}
+          >
+
+            <Ionicons
+              name="close"
+              size={34}
+              color="#fff"
+            />
+
+          </TouchableOpacity>
+
+          {
+            selectedVideo && (
+
+              <Video
+                source={{
+                  uri: selectedVideo.fileUrl
+                }}
+                style={styles.videoPlayer}
+                useNativeControls
+                resizeMode="contain"
+                shouldPlay
+                isLooping={false}
+              />
+
+            )
+          }
+
+        </View>
+      </Modal>
+
     </ScreenWrapper>
   )
 }
 
 const styles = StyleSheet.create({
+
+  loaderContainer: {
+    marginTop: 60,
+  },
+
   listContent: {
-    paddingVertical: theme.sizes.base,
+    paddingTop: 14,
+    paddingBottom: 120,
   },
+
+  // ================= VIDEO CARD =================
+
   videoCard: {
-    marginBottom: theme.sizes.base,
-    borderRadius: theme.sizes.radiusMd,
+    marginBottom: 18,
+
+    borderRadius: 24,
+
     overflow: 'hidden',
-    ...theme.shadows.md,
+
+    backgroundColor: theme.colors.card,
+
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+
+    elevation: 4,
   },
+
   thumbnailContainer: {
-    position: 'relative',
-    width: '100%',
-    height: responsive.getWidth(60),
+    height: 220,
+
+    justifyContent: 'center',
+    alignItems: 'center',
+
+    backgroundColor: '#151515',
   },
-  thumbnail: {
-    width: '100%',
-    height: '100%',
-  },
-  playOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+
+  videoThumb: {
+    width: 90,
+    height: 90,
+
+    borderRadius: 28,
+
+    backgroundColor: 'rgba(255,255,255,0.12)',
+
     justifyContent: 'center',
     alignItems: 'center',
   },
-  durationBadge: {
+
+  playButton: {
     position: 'absolute',
-    bottom: theme.sizes.sm,
-    right: theme.sizes.sm,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    paddingHorizontal: theme.sizes.sm,
-    paddingVertical: theme.sizes.xs,
-    borderRadius: theme.sizes.radiusSm,
+
+    width: 60,
+    height: 60,
+
+    borderRadius: 30,
+
+    backgroundColor: 'rgba(0,0,0,0.45)',
+
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  durationText: {
-    color: '#fff',
-    fontSize: theme.sizes.xs,
-    fontWeight: '600',
-  },
+
+  // ================= INFO =================
+
   videoInfo: {
-    backgroundColor: theme.colors.card,
-    padding: theme.sizes.base,
-    borderBottomLeftRadius: theme.sizes.radiusMd,
-    borderBottomRightRadius: theme.sizes.radiusMd,
+    padding: 18,
   },
+
   videoTitle: {
-    fontSize: theme.sizes.base,
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: '700',
+
     color: theme.colors.text,
-    marginBottom: theme.sizes.xs,
   },
+
   videoDate: {
-    fontSize: theme.sizes.sm,
+    marginTop: 8,
+
+    fontSize: 13,
+
     color: theme.colors.subText,
   },
+
+  // ================= MODAL =================
+
+  modalContainer: {
+    flex: 1,
+
+    backgroundColor: 'rgba(0,0,0,0.96)',
+
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  closeButton: {
+    position: 'absolute',
+    top: 60,
+    right: 20,
+
+    zIndex: 999,
+  },
+
+  videoPlayer: {
+    width: '92%',
+    height: 320,
+
+    backgroundColor: '#000',
+
+    borderRadius: 20,
+  },
+
 })
