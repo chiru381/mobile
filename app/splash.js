@@ -1,92 +1,202 @@
+import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { useEffect, useRef } from 'react'
-import { Animated, StyleSheet, Text, View } from 'react-native'
+import {
+  Animated,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native'
+
 import { theme } from '../constants/theme'
 
 export default function Splash() {
+
   const router = useRouter()
-  const scaleAnim = useRef(new Animated.Value(0.3)).current
-  const opacityAnim = useRef(new Animated.Value(0)).current
+
+  const scaleAnim =
+    useRef(new Animated.Value(0.7)).current
+
+  const opacityAnim =
+    useRef(new Animated.Value(0)).current
+
+  const translateAnim =
+    useRef(new Animated.Value(40)).current
 
   useEffect(() => {
-    // Animate logo
+
     Animated.parallel([
-      Animated.timing(scaleAnim, {
+
+      Animated.spring(scaleAnim, {
         toValue: 1,
-        duration: 600,
+        friction: 4,
+        tension: 40,
         useNativeDriver: true,
       }),
+
       Animated.timing(opacityAnim, {
         toValue: 1,
-        duration: 600,
+        duration: 800,
         useNativeDriver: true,
       }),
+
+      Animated.timing(translateAnim, {
+        toValue: 0,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+
     ]).start()
 
-    // Navigate after 3 seconds
     const timer = setTimeout(() => {
+
       router.replace('/(auth)/login')
-    }, 3000)
+
+    }, 5000)
 
     return () => clearTimeout(timer)
-  }, [router])
+
+  }, [])
 
   return (
+
     <View style={styles.container}>
+
+      {/* GLOW */}
+      <View style={styles.glowCircle} />
+
       <Animated.View
         style={[
           styles.logoContainer,
           {
-            transform: [{ scale: scaleAnim }],
             opacity: opacityAnim,
+            transform: [
+              { scale: scaleAnim },
+              { translateY: translateAnim },
+            ],
           },
         ]}
       >
-        <Text style={styles.emoji}>💖</Text>
-        <Text style={styles.appName}>Memory</Text>
-        <Text style={styles.tagline}>Preserve Your Precious Moments</Text>
+
+        <View style={styles.iconBox}>
+
+          <Ionicons
+            name="heart"
+            size={60}
+            color="#fff"
+          />
+
+        </View>
+
+        <Text style={styles.appName}>
+          Memory
+        </Text>
+
+        <Text style={styles.tagline}>
+          Preserve Your Precious Moments
+        </Text>
+
       </Animated.View>
 
+      {/* FOOTER */}
+
       <View style={styles.footer}>
-        <Text style={styles.version}>v1.0.0</Text>
+
+        <Text style={styles.version}>
+          v1.0.0
+        </Text>
+
       </View>
+
     </View>
   )
 }
 
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
+
     backgroundColor: theme.colors.bg,
+
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: theme.sizes.lg,
+
+    overflow: 'hidden',
   },
+
+  glowCircle: {
+    position: 'absolute',
+
+    width: 280,
+    height: 280,
+
+    borderRadius: 140,
+
+    backgroundColor: `${theme.colors.primary}15`,
+  },
+
   logoContainer: {
     alignItems: 'center',
   },
-  emoji: {
-    fontSize: 80,
-    marginBottom: theme.sizes.base,
+
+  iconBox: {
+    width: 130,
+    height: 130,
+
+    borderRadius: 40,
+
+    backgroundColor: theme.colors.primary,
+
+    justifyContent: 'center',
+    alignItems: 'center',
+
+    shadowColor: theme.colors.primary,
+    shadowOffset: {
+      width: 0,
+      height: 10,
+    },
+
+    shadowOpacity: 0.35,
+    shadowRadius: 15,
+
+    elevation: 12,
+
+    marginBottom: 28,
   },
+
   appName: {
-    fontSize: theme.sizes.h1,
-    fontWeight: '700',
+    fontSize: 42,
+    fontWeight: '900',
+
     color: theme.colors.text,
-    marginBottom: theme.sizes.sm,
+
+    letterSpacing: 1,
   },
+
   tagline: {
-    fontSize: theme.sizes.base,
+    marginTop: 12,
+
+    fontSize: 15,
+
     color: theme.colors.subText,
+
     textAlign: 'center',
-    marginTop: theme.sizes.md,
+
+    paddingHorizontal: 40,
+
+    lineHeight: 24,
   },
+
   footer: {
     position: 'absolute',
-    bottom: theme.sizes.xxl,
+    bottom: 50,
   },
+
   version: {
     color: theme.colors.subText,
-    fontSize: theme.sizes.sm,
+    fontSize: 13,
+    fontWeight: '600',
   },
+
 })
