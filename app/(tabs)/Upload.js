@@ -3,6 +3,7 @@ import { useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
+  FlatList,
   Image,
   StyleSheet,
   Text,
@@ -23,11 +24,11 @@ import apiService from '../../utils/apiService'
 
 export default function Upload() {
 
-  const [fileData, setFileData] = useState(null)
+  const [fileData, setFileData] = useState([])
 
   const [loading, setLoading] = useState(false)
 
-  // ================= PICK FILE =================
+  // ================= PICK MULTIPLE FILES =================
 
   const pickFile = async () => {
 
@@ -48,8 +49,11 @@ export default function Upload() {
 
       const result =
         await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.All,
-          allowsEditing: false,
+          mediaTypes:
+            ImagePicker.MediaTypeOptions.All,
+
+          allowsMultipleSelection: true,
+
           quality: 1,
         })
 
@@ -57,17 +61,30 @@ export default function Upload() {
         return
       }
 
-      if (result.assets && result.assets.length > 0) {
+      if (
+        result.assets &&
+        result.assets.length > 0
+      ) {
 
-        const asset = result.assets[0]
+        const files =
+          result.assets.map(asset => ({
+            uri: asset.uri,
 
-        setFileData({
-          uri: asset.uri,
-          type: asset.mimeType || 'image/jpeg',
-          fileName:
-            asset.fileName ||
-            `upload.${asset.uri.split('.').pop()}`
-        })
+            type:
+              asset.mimeType ||
+              'image/jpeg',
+
+            fileName:
+              asset.fileName ||
+              `upload.${asset.uri
+                .split('.')
+                .pop()}`,
+          }))
+
+        setFileData(prev => [
+          ...prev,
+          ...files,
+        ])
       }
 
     } catch (error) {
@@ -76,21 +93,33 @@ export default function Upload() {
 
       Alert.alert(
         'Error',
-        'Failed to pick file'
+        'Failed to pick files'
       )
     }
   }
 
-  // ================= UPLOAD FILE =================
+  // ================= REMOVE FILE =================
+
+  const removeFile = index => {
+
+    const updatedFiles =
+      [...fileData]
+
+    updatedFiles.splice(index, 1)
+
+    setFileData(updatedFiles)
+  }
+
+  // ================= UPLOAD FILES =================
 
   const uploadFile = async () => {
 
     try {
 
-      if (!fileData) {
+      if (fileData.length === 0) {
 
         Alert.alert(
-          'Please select image or video'
+          'Please select files'
         )
 
         return
@@ -98,18 +127,25 @@ export default function Upload() {
 
       setLoading(true)
 
-      const response =
-        await apiService.uploadFile(fileData)
+      const uploadPromises =
+        fileData.map(file =>
+          apiService.uploadFile(file)
+        )
 
-      console.log('UPLOAD RESPONSE:', response)
+      const response =
+        await Promise.all(uploadPromises)
+
+      console.log(
+        'UPLOAD RESPONSE:',
+        response
+      )
 
       Alert.alert(
         'Success',
-        'File uploaded successfully'
+        'All files uploaded successfully'
       )
 
-      // RESET AFTER SUCCESS
-      setFileData(null)
+      setFileData([])
 
     } catch (error) {
 
@@ -124,6 +160,84 @@ export default function Upload() {
 
       setLoading(false)
     }
+  }
+
+  // ================= RENDER FILE =================
+
+  const renderItem = ({
+    item,
+    index,
+  }) => {
+
+    const isImage =
+      item?.type?.includes('image')
+
+    return (
+
+      <View style={styles.previewCard}>
+
+        {
+          isImage ? (
+
+            <Image
+              source={{
+                uri: item.uri,
+              }}
+              style={styles.image}
+            />
+
+          ) : (
+
+            <View style={styles.videoBox}>
+
+              <Ionicons
+                name="videocam"
+                size={50}
+                color={
+                  theme.colors.primary
+                }
+              />
+
+              <Text
+                style={styles.videoText}
+              >
+                Video Selected
+              </Text>
+
+            </View>
+          )
+        }
+
+        <Text
+          numberOfLines={1}
+          style={styles.fileName}
+        >
+          {item.fileName}
+        </Text>
+
+        <TouchableOpacity
+          style={styles.removeBtn}
+          onPress={() =>
+            removeFile(index)
+          }
+        >
+
+          <Ionicons
+            name="close-circle"
+            size={20}
+            color="#fff"
+          />
+
+          <Text
+            style={styles.removeText}
+          >
+            Remove
+          </Text>
+
+        </TouchableOpacity>
+
+      </View>
+    )
   }
 
   return (
@@ -151,83 +265,47 @@ export default function Upload() {
             color="#fff"
           />
 
-          <Text style={styles.pickButtonText}>
-            Pick Image / Video
+          <Text
+            style={
+              styles.pickButtonText
+            }
+          >
+            Pick Images / Videos
           </Text>
 
         </TouchableOpacity>
 
-        {/* PREVIEW */}
+        {/* FILE LIST */}
 
         {
-          fileData && (
+          fileData.length > 0 && (
 
-            <View style={styles.previewContainer}>
-
-              {
-                fileData?.type?.includes('image') ? (
-
-                  <Image
-                    source={{
-                      uri: fileData.uri
-                    }}
-                    style={styles.image}
-                  />
-
-                ) : (
-
-                  <View style={styles.videoBox}>
-
-                    <Ionicons
-                      name="videocam"
-                      size={50}
-                      color={theme.colors.primary}
-                    />
-
-                    <Text style={styles.videoText}>
-                      Video Selected
-                    </Text>
-
-                  </View>
-                )
-              }
-
-              <Text style={styles.fileName}>
-                {fileData.fileName}
-              </Text>
-
-              {/* REMOVE BUTTON */}
-
-              <TouchableOpacity
-                style={styles.removeBtn}
-                onPress={() => setFileData(null)}
-              >
-
-                <Ionicons
-                  name="close-circle"
-                  size={20}
-                  color="#fff"
-                />
-
-                <Text style={styles.removeText}>
-                  Remove
-                </Text>
-
-              </TouchableOpacity>
-
-            </View>
+            <FlatList
+              data={fileData}
+              renderItem={renderItem}
+              keyExtractor={(
+                item,
+                index
+              ) => index.toString()}
+              scrollEnabled={false}
+              contentContainerStyle={{
+                paddingTop: 20,
+              }}
+            />
           )
         }
 
-        {/* SHOW ONLY AFTER FILE SELECTED */}
+        {/* UPLOAD BUTTON */}
 
         {
-          fileData && (
+          fileData.length > 0 && (
 
             <TouchableOpacity
               style={[
                 styles.uploadButton,
-                loading && styles.disabledButton
+
+                loading &&
+                  styles.disabledButton,
               ]}
               activeOpacity={0.8}
               onPress={uploadFile}
@@ -250,8 +328,12 @@ export default function Upload() {
                       color="#fff"
                     />
 
-                    <Text style={styles.uploadButtonText}>
-                      Upload File
+                    <Text
+                      style={
+                        styles.uploadButtonText
+                      }
+                    >
+                      Upload All Files
                     </Text>
                   </>
                 )
@@ -274,54 +356,52 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
 
-  // ================= PICK BUTTON =================
-
   pickButton: {
     height: 58,
+
     borderRadius: 18,
 
-    backgroundColor: theme.colors.primary,
+    backgroundColor:
+      theme.colors.primary,
 
     flexDirection: 'row',
+
     justifyContent: 'center',
+
     alignItems: 'center',
 
     gap: 10,
-
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 5,
-
-    elevation: 5,
   },
 
   pickButtonText: {
     color: '#fff',
+
     fontSize: 16,
+
     fontWeight: '700',
   },
 
-  // ================= PREVIEW =================
+  previewCard: {
+    marginBottom: 20,
 
-  previewContainer: {
-    marginTop: 24,
-
-    backgroundColor: theme.colors.card,
+    backgroundColor:
+      theme.colors.card,
 
     borderRadius: 20,
+
     padding: 16,
 
     borderWidth: 1,
-    borderColor: theme.colors.border,
+
+    borderColor:
+      theme.colors.border,
   },
 
   image: {
     width: '100%',
-    height: 300,
+
+    height: 250,
+
     borderRadius: 16,
   },
 
@@ -330,9 +410,11 @@ const styles = StyleSheet.create({
 
     borderRadius: 16,
 
-    backgroundColor: `${theme.colors.primary}10`,
+    backgroundColor:
+      `${theme.colors.primary}10`,
 
     justifyContent: 'center',
+
     alignItems: 'center',
   },
 
@@ -340,6 +422,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
 
     fontSize: 18,
+
     fontWeight: '700',
 
     color: theme.colors.text,
@@ -350,21 +433,24 @@ const styles = StyleSheet.create({
 
     fontSize: 14,
 
-    color: theme.colors.subText,
+    color:
+      theme.colors.subText,
   },
-
-  // ================= REMOVE BUTTON =================
 
   removeBtn: {
     marginTop: 18,
 
-    backgroundColor: theme.colors.error,
+    backgroundColor:
+      theme.colors.error,
 
     height: 45,
+
     borderRadius: 14,
 
     flexDirection: 'row',
+
     justifyContent: 'center',
+
     alignItems: 'center',
 
     gap: 8,
@@ -372,35 +458,29 @@ const styles = StyleSheet.create({
 
   removeText: {
     color: '#fff',
+
     fontSize: 15,
+
     fontWeight: '700',
   },
-
-  // ================= UPLOAD BUTTON =================
 
   uploadButton: {
     marginTop: 24,
 
-    backgroundColor: theme.colors.success,
+    backgroundColor:
+      theme.colors.success,
 
     height: 58,
+
     borderRadius: 18,
 
     flexDirection: 'row',
+
     justifyContent: 'center',
+
     alignItems: 'center',
 
     gap: 10,
-
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 5,
-
-    elevation: 5,
   },
 
   disabledButton: {
@@ -409,8 +489,9 @@ const styles = StyleSheet.create({
 
   uploadButtonText: {
     color: '#fff',
+
     fontSize: 16,
+
     fontWeight: '700',
   },
-
 })
