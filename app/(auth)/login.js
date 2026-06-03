@@ -1,7 +1,9 @@
 import { Ionicons } from '@expo/vector-icons'
+import * as AuthSession from 'expo-auth-session'
 import { useRouter } from 'expo-router'
+import * as WebBrowser from 'expo-web-browser'
 import { useState } from 'react'
-import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native'
+import { KeyboardAvoidingView, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import AIToy from '../../components/AIToy'
 import AppButton from '../../components/AppButton'
 import Header from '../../components/Header'
@@ -9,6 +11,14 @@ import ScreenWrapper from '../../components/ScreenWrapper'
 import AppTextInput from '../../components/TextInput'
 import { theme } from '../../constants/theme'
 import apiService from '../../utils/apiService'
+
+WebBrowser.maybeCompleteAuthSession()
+
+const discovery = {
+  authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
+  tokenEndpoint: 'https://oauth2.googleapis.com/token',
+  revocationEndpoint: 'https://oauth2.googleapis.com/revoke',
+}
 
 export default function Login() {
   const router = useRouter()
@@ -30,6 +40,27 @@ export default function Login() {
     return Object.keys(newErrors).length === 0
   }
 
+  const redirectUri = AuthSession.makeRedirectUri({
+  scheme: 'mobileapp',
+})
+console.log('Redirect URI:', redirectUri)
+
+const [request, response, promptAsync] = AuthSession.useAuthRequest(
+  {
+    clientId: '275435124465-qlbifmtdqt7ng7c9maqpe5g6t8hfrkh5.apps.googleusercontent.com',
+    scopes: [
+      'openid',
+      'profile',
+      'email',
+      'https://www.googleapis.com/auth/drive.readonly',
+    ],
+    redirectUri,
+    responseType: AuthSession.ResponseType.Token,
+  },
+  discovery
+)
+
+
   const handleMPINLogin = async () => {
     if (!validateForm()) return
 
@@ -48,6 +79,36 @@ export default function Login() {
       setLoading(false)
     }
   }
+
+const handleGoogleLogin = async () => {
+  try {
+    const result = await promptAsync()
+
+    if (result.type === 'success') {
+      const accessToken = result.params.access_token
+
+      console.log('Access Token:', accessToken)
+
+      const userResponse = await fetch(
+        'https://www.googleapis.com/oauth2/v2/userinfo',
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      )
+
+      const user = await userResponse.json()
+
+      console.log('User Info:', user)
+
+      router.replace('/(tabs)')
+    }
+  } catch (error) {
+    console.log(error)
+    alert('Google login failed')
+  }
+}
 
   const handleBiometricLogin = async (type) => {
     setLoading(true)
@@ -198,6 +259,20 @@ export default function Login() {
             />
           )}
 
+        <TouchableOpacity
+          onPress={handleGoogleLogin}
+          style={styles.googleButton}
+        >
+          <Ionicons
+            name="logo-google"
+            size={22}
+            color="#DB4437"
+          />
+          <Text style={styles.googleText}>
+            Continue with Google
+          </Text>
+        </TouchableOpacity>
+
           {/* Register Link */}
           <View style={styles.registerContainer}>
             <Text style={styles.registerText}>Don't have an account? </Text>
@@ -258,4 +333,21 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: theme.sizes.base,
   },
+  googleButton: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: '#fff',
+  borderWidth: 1,
+  borderColor: '#ddd',
+  borderRadius: 12,
+  padding: 14,
+  marginTop: 20,
+},
+
+googleText: {
+  marginLeft: 10,
+  fontSize: 16,
+  fontWeight: '600',
+},
 })
