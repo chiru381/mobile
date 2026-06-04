@@ -15,7 +15,8 @@
         "READ_MEDIA_IMAGES",
         "READ_MEDIA_VIDEO"
       ],
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.chiranjeevi.mobileapp"
     },
     "web": {
       "output": "static"

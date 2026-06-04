@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons'
-import * as AuthSession from 'expo-auth-session'
+// import * as AuthSession from 'expo-auth-session'
+import * as Google from 'expo-auth-session/providers/google'
 import { useRouter } from 'expo-router'
 import * as WebBrowser from 'expo-web-browser'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { KeyboardAvoidingView, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import AIToy from '../../components/AIToy'
 import AppButton from '../../components/AppButton'
@@ -12,13 +13,15 @@ import AppTextInput from '../../components/TextInput'
 import { theme } from '../../constants/theme'
 import apiService from '../../utils/apiService'
 
+
+
 WebBrowser.maybeCompleteAuthSession()
 
-const discovery = {
-  authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
-  tokenEndpoint: 'https://oauth2.googleapis.com/token',
-  revocationEndpoint: 'https://oauth2.googleapis.com/revoke',
-}
+// const discovery = {
+//   authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
+//   tokenEndpoint: 'https://oauth2.googleapis.com/token',
+//   revocationEndpoint: 'https://oauth2.googleapis.com/revoke',
+// }
 
 export default function Login() {
   const router = useRouter()
@@ -30,6 +33,7 @@ export default function Login() {
   })
   const [errors, setErrors] = useState({})
 
+
   const validateForm = () => {
     const newErrors = {}
     if (!formData.phone.trim()) newErrors.phone = 'Phone number is required'
@@ -40,25 +44,57 @@ export default function Login() {
     return Object.keys(newErrors).length === 0
   }
 
-  const redirectUri = AuthSession.makeRedirectUri({
-  scheme: 'mobileapp',
-})
-console.log('Redirect URI:', redirectUri)
+//   const redirectUri = AuthSession.makeRedirectUri({
+//   scheme: 'mobileapp',
+//   useProxy: true,
+// })
+// console.log('Redirect URI:', redirectUri)
 
-const [request, response, promptAsync] = AuthSession.useAuthRequest(
-  {
-    clientId: '275435124465-qlbifmtdqt7ng7c9maqpe5g6t8hfrkh5.apps.googleusercontent.com',
-    scopes: [
-      'openid',
-      'profile',
-      'email',
-      'https://www.googleapis.com/auth/drive.readonly',
-    ],
-    redirectUri,
-    responseType: AuthSession.ResponseType.Token,
-  },
-  discovery
-)
+const [request, response, promptAsync] =
+  Google.useAuthRequest({
+    expoClientId:
+      '275435124465-97lvsepa2llimcocst7ih9ggm40d9dse.apps.googleusercontent.com',
+
+    androidClientId:
+      '275435124465-mo4nctohdfkgglde7mo9p5nnt8bmvhh3.apps.googleusercontent.com',
+
+    webClientId:
+      '275435124465-97lvsepa2llimcocst7ih9ggm40d9dse.apps.googleusercontent.com',
+      scopes: ['openid', 'profile', 'email'],
+  })
+
+
+  useEffect(() => {
+  if (response?.type === 'success') {
+    console.log('SUCCESS')
+
+    const { authentication } = response
+
+    console.log(authentication)
+
+    router.replace('/(tabs)')
+  }
+
+  if (response?.type === 'error') {
+    console.log('ERROR', response.error)
+  }
+}, [response])
+
+
+// const [request, response, promptAsync] = AuthSession.useAuthRequest(
+//   {
+//     clientId: '275435124465-qlbifmtdqt7ng7c9maqpe5g6t8hfrkh5.apps.googleusercontent.com',
+//     scopes: [
+//       'openid',
+//       'profile',
+//       'email',
+//       // 'https://www.googleapis.com/auth/drive.readonly',
+//     ],
+//     redirectUri,
+//     // responseType: AuthSession.ResponseType.Token,
+//   },
+//   discovery
+// )
 
 
   const handleMPINLogin = async () => {
@@ -80,33 +116,24 @@ const [request, response, promptAsync] = AuthSession.useAuthRequest(
     }
   }
 
-const handleGoogleLogin = async () => {
+  const handleGoogleLogin = async () => {
+  console.log("Request:", request)
+
+  if (!request) {
+    console.log("Request not ready")
+    return
+  }
+
   try {
+    // const result = await promptAsync({
+    //   useProxy: true,
+    //   showInRecents: true,
+    // })
     const result = await promptAsync()
 
-    if (result.type === 'success') {
-      const accessToken = result.params.access_token
-
-      console.log('Access Token:', accessToken)
-
-      const userResponse = await fetch(
-        'https://www.googleapis.com/oauth2/v2/userinfo',
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      )
-
-      const user = await userResponse.json()
-
-      console.log('User Info:', user)
-
-      router.replace('/(tabs)')
-    }
-  } catch (error) {
-    console.log(error)
-    alert('Google login failed')
+    console.log("RESULT:", result)
+  } catch (e) {
+    console.log("ERROR:", e)
   }
 }
 
