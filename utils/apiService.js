@@ -1,6 +1,6 @@
 // API configuration and service
 
-const API_BASE_URL = 'http://192.168.2.103:5000/api'
+const API_BASE_URL = 'http://10.120.135.49:5000/api'
 
 async function request(url, options = {}) {
   const res = await fetch(url, options)
