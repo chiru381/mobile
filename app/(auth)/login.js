@@ -1,13 +1,26 @@
 import { Ionicons } from '@expo/vector-icons'
+// import * as AuthSession from 'expo-auth-session'
+import * as Google from 'expo-auth-session/providers/google'
 import { useRouter } from 'expo-router'
-import { useState } from 'react'
-import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native'
+import * as WebBrowser from 'expo-web-browser'
+import { useEffect, useState } from 'react'
+import { KeyboardAvoidingView, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import AIToy from '../../components/AIToy'
 import AppButton from '../../components/AppButton'
 import ScreenWrapper from '../../components/ScreenWrapper'
 import AppTextInput from '../../components/TextInput'
 import { theme } from '../../constants/theme'
 import apiService from '../../utils/apiService'
+
+
+
+WebBrowser.maybeCompleteAuthSession()
+
+// const discovery = {
+//   authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
+//   tokenEndpoint: 'https://oauth2.googleapis.com/token',
+//   revocationEndpoint: 'https://oauth2.googleapis.com/revoke',
+// }
 
 export default function Login() {
   const router = useRouter()
@@ -19,6 +32,7 @@ export default function Login() {
   })
   const [errors, setErrors] = useState({})
 
+
   const validateForm = () => {
     const newErrors = {}
     if (!formData.phone.trim()) newErrors.phone = 'Phone number is required'
@@ -28,6 +42,59 @@ export default function Login() {
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
+
+//   const redirectUri = AuthSession.makeRedirectUri({
+//   scheme: 'mobileapp',
+//   useProxy: true,
+// })
+// console.log('Redirect URI:', redirectUri)
+
+const [request, response, promptAsync] =
+  Google.useAuthRequest({
+    expoClientId:
+      '275435124465-97lvsepa2llimcocst7ih9ggm40d9dse.apps.googleusercontent.com',
+
+    androidClientId:
+      '275435124465-mo4nctohdfkgglde7mo9p5nnt8bmvhh3.apps.googleusercontent.com',
+
+    webClientId:
+      '275435124465-97lvsepa2llimcocst7ih9ggm40d9dse.apps.googleusercontent.com',
+      scopes: ['openid', 'profile', 'email'],
+  })
+
+
+  useEffect(() => {
+  if (response?.type === 'success') {
+    console.log('SUCCESS')
+
+    const { authentication } = response
+
+    console.log(authentication)
+
+    router.replace('/(tabs)')
+  }
+
+  if (response?.type === 'error') {
+    console.log('ERROR', response.error)
+  }
+}, [response])
+
+
+// const [request, response, promptAsync] = AuthSession.useAuthRequest(
+//   {
+//     clientId: '275435124465-qlbifmtdqt7ng7c9maqpe5g6t8hfrkh5.apps.googleusercontent.com',
+//     scopes: [
+//       'openid',
+//       'profile',
+//       'email',
+//       // 'https://www.googleapis.com/auth/drive.readonly',
+//     ],
+//     redirectUri,
+//     // responseType: AuthSession.ResponseType.Token,
+//   },
+//   discovery
+// )
+
 
   const handleMPINLogin = async () => {
     if (!validateForm()) return
@@ -47,6 +114,27 @@ export default function Login() {
       setLoading(false)
     }
   }
+
+  const handleGoogleLogin = async () => {
+  console.log("Request:", request)
+
+  if (!request) {
+    console.log("Request not ready")
+    return
+  }
+
+  try {
+    // const result = await promptAsync({
+    //   useProxy: true,
+    //   showInRecents: true,
+    // })
+    const result = await promptAsync()
+
+    console.log("RESULT:", result)
+  } catch (e) {
+    console.log("ERROR:", e)
+  }
+}
 
   const handleBiometricLogin = async (type) => {
     setLoading(true)
@@ -183,6 +271,20 @@ export default function Login() {
             />
           )}
 
+        <TouchableOpacity
+          onPress={handleGoogleLogin}
+          style={styles.googleButton}
+        >
+          <Ionicons
+            name="logo-google"
+            size={22}
+            color="#DB4437"
+          />
+          <Text style={styles.googleText}>
+            Continue with Google
+          </Text>
+        </TouchableOpacity>
+
           {/* Register Link */}
           <View style={styles.registerContainer}>
             <Text style={styles.registerText}>Don't have an account? </Text>
@@ -243,4 +345,21 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: theme.sizes.base,
   },
+  googleButton: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: '#fff',
+  borderWidth: 1,
+  borderColor: '#ddd',
+  borderRadius: 12,
+  padding: 14,
+  marginTop: 20,
+},
+
+googleText: {
+  marginLeft: 10,
+  fontSize: 16,
+  fontWeight: '600',
+},
 })
