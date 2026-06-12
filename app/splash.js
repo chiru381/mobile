@@ -1,36 +1,48 @@
-import { Ionicons } from '@expo/vector-icons'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter } from 'expo-router'
-import { useEffect, useRef } from 'react'
+import {
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 import {
   Animated,
+  Image,
   StyleSheet,
   Text,
   View,
 } from 'react-native'
+import Carousel from 'react-native-reanimated-carousel'
 
 import { theme } from '../constants/theme'
 
+import {
+  Dimensions
+} from 'react-native'
+
 export default function Splash() {
+
+  const { width, height } =
+  Dimensions.get('window')
 
   const router = useRouter()
 
+  const [images, setImages] = useState([])
+  const [currentIndex, setCurrentIndex] = useState(0)
+
   const scaleAnim =
-    useRef(new Animated.Value(0.7)).current
+    useRef(new Animated.Value(0.9)).current
 
   const opacityAnim =
     useRef(new Animated.Value(0)).current
 
-  const translateAnim =
-    useRef(new Animated.Value(40)).current
-
   useEffect(() => {
 
-    Animated.parallel([
+    loadImages()
 
+    Animated.parallel([
       Animated.spring(scaleAnim, {
         toValue: 1,
-        friction: 4,
-        tension: 40,
         useNativeDriver: true,
       }),
 
@@ -39,54 +51,90 @@ export default function Splash() {
         duration: 800,
         useNativeDriver: true,
       }),
-
-      Animated.timing(translateAnim, {
-        toValue: 0,
-        duration: 800,
-        useNativeDriver: true,
-      }),
-
     ]).start()
 
-    const timer = setTimeout(() => {
-
-      router.replace('/(auth)/login')
-
-    }, 5000)
-
-    return () => clearTimeout(timer)
 
   }, [])
+
+  const loadImages = async () => {
+  try {
+
+    const storedImages =
+      await AsyncStorage.getItem(
+        'splashImages'
+      )
+
+    const data =
+      storedImages
+        ? JSON.parse(storedImages)
+        : []
+
+    setImages(data)
+
+  } catch (error) {
+
+    console.log(
+      'Error loading splash images:',
+      error
+    )
+
+    setImages([])
+  }
+}
 
   return (
 
     <View style={styles.container}>
 
-      {/* GLOW */}
-      <View style={styles.glowCircle} />
+      {
+        images.length > 0 && (
+
+          <Carousel
+  width={width}
+  height={height}
+  data={images}
+  loop={false}
+  pagingEnabled={true}
+  snapEnabled={true}
+  enabled={true}
+  panGestureHandlerProps={{
+    activeOffsetX: [-10, 10],
+  }}
+  onSnapToItem={(index) => {
+    setCurrentIndex(index)
+  }}
+  renderItem={({ item }) => (
+    <Image
+      source={{
+        uri: item.fileUrl,
+      }}
+      style={styles.backgroundImage}
+    />
+  )}
+/>
+
+        )
+      }
+
+      <View
+  pointerEvents="none"
+  style={styles.overlay}
+/>
 
       <Animated.View
-        style={[
-          styles.logoContainer,
-          {
-            opacity: opacityAnim,
-            transform: [
-              { scale: scaleAnim },
-              { translateY: translateAnim },
-            ],
-          },
-        ]}
-      >
-
-        <View style={styles.iconBox}>
-
-          <Ionicons
-            name="heart"
-            size={60}
-            color="#fff"
-          />
-
-        </View>
+  pointerEvents="box-none"
+  style={[
+    styles.centerContent,
+    {
+      opacity: opacityAnim,
+      transform: [
+        {
+          scale: scaleAnim
+        }
+      ],
+    },
+  ]}
+>
 
         <Text style={styles.appName}>
           Memory
@@ -95,18 +143,43 @@ export default function Splash() {
         <Text style={styles.tagline}>
           Preserve Your Precious Moments
         </Text>
+        <View style={styles.dotsContainer}>
+  {images.map((_, index) => (
+    <View
+      key={index}
+      style={[
+        styles.dot,
+        currentIndex === index &&
+          styles.activeDot,
+      ]}
+    />
+  ))}
+</View>
+        {
+  currentIndex === images.length - 1 &&
+  images.length > 0 && (
+
+    <Animated.View
+      style={{
+        marginTop: 30,
+      }}
+    >
+
+      <Text
+        style={styles.continueBtn}
+        onPress={() =>
+          router.replace('/(auth)/login')
+        }
+      >
+        Continue →
+      </Text>
+
+    </Animated.View>
+
+  )
+}
 
       </Animated.View>
-
-      {/* FOOTER */}
-
-      <View style={styles.footer}>
-
-        <Text style={styles.version}>
-          v1.0.0
-        </Text>
-
-      </View>
 
     </View>
   )
@@ -114,89 +187,76 @@ export default function Splash() {
 
 const styles = StyleSheet.create({
 
-  container: {
-    flex: 1,
+ backgroundImage: {
+  width: '100%',
+  height: '100%',
+  resizeMode: 'cover',
+},
 
-    backgroundColor: theme.colors.bg,
+overlay: {
+  position: 'absolute',
+  width: '100%',
+  height: '100%',
+  backgroundColor: 'rgba(0,0,0,0.45)',
+},
 
-    justifyContent: 'center',
-    alignItems: 'center',
+centerContent: {
+  position: 'absolute',
+  bottom: 80,
+  left: 0,
+  right: 0,
+  alignItems: 'center',
+},
 
-    overflow: 'hidden',
-  },
+appName: {
+  color: '#fff',
+  fontSize: 42,
+  fontWeight: '900',
+},
 
-  glowCircle: {
-    position: 'absolute',
+tagline: {
+  color: '#fff',
+  marginTop: 10,
+  fontSize: 15,
+},
 
-    width: 280,
-    height: 280,
+container: {
+  flex: 1,
+  backgroundColor: theme.colors.bg,
+},
 
-    borderRadius: 140,
+continueBtn: {
+  color: '#fff',
+  fontSize: 18,
+  fontWeight: '700',
 
-    backgroundColor: `${theme.colors.primary}15`,
-  },
+  backgroundColor:
+    theme.colors.primary,
 
-  logoContainer: {
-    alignItems: 'center',
-  },
+  paddingHorizontal: 24,
+  paddingVertical: 12,
 
-  iconBox: {
-    width: 130,
-    height: 130,
+  borderRadius: 30,
+},
 
-    borderRadius: 40,
+dotsContainer: {
+  flexDirection: 'row',
+  marginTop: 25,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
 
-    backgroundColor: theme.colors.primary,
+dot: {
+  width: 10,
+  height: 10,
+  borderRadius: 5,
+  backgroundColor: 'rgba(255,255,255,0.4)',
+  marginHorizontal: 5,
+},
 
-    justifyContent: 'center',
-    alignItems: 'center',
-
-    shadowColor: theme.colors.primary,
-    shadowOffset: {
-      width: 0,
-      height: 10,
-    },
-
-    shadowOpacity: 0.35,
-    shadowRadius: 15,
-
-    elevation: 12,
-
-    marginBottom: 28,
-  },
-
-  appName: {
-    fontSize: 42,
-    fontWeight: '900',
-
-    color: theme.colors.text,
-
-    letterSpacing: 1,
-  },
-
-  tagline: {
-    marginTop: 12,
-
-    fontSize: 15,
-
-    color: theme.colors.subText,
-
-    textAlign: 'center',
-
-    paddingHorizontal: 40,
-
-    lineHeight: 24,
-  },
-
-  footer: {
-    position: 'absolute',
-    bottom: 50,
-  },
-
-  version: {
-    color: theme.colors.subText,
-    fontSize: 13,
-    fontWeight: '600',
-  },
+activeDot: {
+  width: 24,
+  backgroundColor: '#fff',
+},
 
 })

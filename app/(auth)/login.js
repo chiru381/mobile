@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native'
 import AIToy from '../../components/AIToy'
 import AppButton from '../../components/AppButton'
-import Header from '../../components/Header'
 import ScreenWrapper from '../../components/ScreenWrapper'
 import AppTextInput from '../../components/TextInput'
 import { theme } from '../../constants/theme'
@@ -76,24 +75,10 @@ export default function Login() {
         <AIToy
           message="Welcome back to your memory app!"
         />
-        <Header title="Login" />
+        
 
         <View style={styles.formContainer}>
-          <Text style={styles.subtitle}>Choose your login method</Text>
-
-          {/* Login Method Tabs */}
-          <View style={styles.methodTabs}>
-            {['mpin', 'fingerprint', 'face', 'voice'].map((method) => (
-              <AppButton
-                key={method}
-                title={method.charAt(0).toUpperCase() + method.slice(1)}
-                onPress={() => setLoginMethod(method)}
-                variant={loginMethod === method ? 'primary' : 'secondary'}
-                size="sm"
-                fullWidth
-              />
-            ))}
-          </View>
+          
 
           {/* Phone Input - Always visible */}
           <AppTextInput

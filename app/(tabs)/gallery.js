@@ -6,15 +6,12 @@ import {
   ActivityIndicator,
   FlatList,
   Image,
-  Modal,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native'
 
-import { Video } from 'expo-av'
 
 import { useFocusEffect } from 'expo-router'
 
@@ -25,7 +22,13 @@ import { theme } from '../../constants/theme'
 
 import { responsive } from '../../utils/responsive'
 
+import ImageViewing from 'react-native-image-viewing'
+import Animated, {
+  FadeInDown,
+} from 'react-native-reanimated'
 import apiService from '../../utils/apiService'
+
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 export default function Gallery() {
 
@@ -37,7 +40,48 @@ export default function Gallery() {
 
   const [openVideos, setOpenVideos] = useState(false)
 
-  const [selectedItem, setSelectedItem] = useState(null)
+  const [imageViewerVisible, setImageViewerVisible] = useState(false)
+const [currentImageIndex, setCurrentImageIndex] = useState(0)
+
+const saveSplashImage = async (item) => {
+  try {
+
+    const storedImages =
+      await AsyncStorage.getItem(
+        'splashImages'
+      )
+
+    const existing =
+      storedImages
+        ? JSON.parse(storedImages)
+        : []
+
+    const updated = [
+
+      ...existing.filter(
+        img =>
+          img.fileUrl !== item.fileUrl
+      ),
+
+      item,
+
+    ].slice(-3)
+
+    await AsyncStorage.setItem(
+      'splashImages',
+      JSON.stringify(updated)
+    )
+
+    alert(
+      'Added to Splash Screen'
+    )
+
+  } catch (error) {
+
+    console.log(error)
+
+  }
+}
 
   // ================= GET FILES =================
 
@@ -73,6 +117,10 @@ export default function Gallery() {
     item => item.fileType === 'image'
   )
 
+  const imageUrls = imageData.map(item => ({
+    uri: item.fileUrl,
+  }))
+
   const videoData = galleryData.filter(
     item => item.fileType === 'video'
   )
@@ -91,44 +139,57 @@ export default function Gallery() {
   // ================= RENDER ITEM =================
 
   const renderGalleryItem = ({ item }) => (
-
+    <Animated.View
+  entering={FadeInDown.duration(300)}
+>
     <TouchableOpacity
-      style={[
-        styles.imageWrapper,
-        {
-          width: imageSize,
-          height: imageSize,
-        }
-      ]}
-      activeOpacity={0.8}
-      onPress={() => setSelectedItem(item)}
-    >
+  style={[
+    styles.imageWrapper,
+    {
+      width: imageSize,
+      height: imageSize,
+    }
+  ]}
+  activeOpacity={0.8}
+  onPress={() => {
+    const index = imageData.findIndex(
+      img => img._id === item._id
+    )
 
-      {
-        item.fileType === 'image' ? (
+    setCurrentImageIndex(index)
+    setImageViewerVisible(true)
+  }}
+>
 
-          <Image
-            source={{
-              uri: item.fileUrl
-            }}
-            style={styles.image}
-          />
+  <Image
+    source={{
+      uri: item.fileUrl
+    }}
+    style={styles.image}
+  />
 
-        ) : (
+  {/* Splash Screen Image Button */}
 
-          <View style={styles.videoCard}>
+  <TouchableOpacity
+  style={styles.splashBtn}
+  activeOpacity={0.8}
+  onPress={(event) => {
 
-            <Ionicons
-              name="videocam"
-              size={40}
-              color="#fff"
-            />
+    event.stopPropagation()
 
-          </View>
-        )
-      }
+    saveSplashImage(item)
 
-    </TouchableOpacity>
+  }}
+>
+  <Ionicons
+    name="star"
+    size={20}
+    color="#FFD700"
+  />
+</TouchableOpacity>
+
+</TouchableOpacity>
+    </Animated.View>
   )
 
   // ================= MAIN =================
@@ -287,7 +348,7 @@ export default function Gallery() {
 
       {/* ================= PREVIEW MODAL ================= */}
 
-      <Modal
+      {/* <Modal
         visible={!!selectedItem}
         transparent
         animationType="fade"
@@ -362,7 +423,17 @@ export default function Gallery() {
 
         </View>
 
-      </Modal>
+      </Modal> */}
+
+      <ImageViewing
+  images={imageUrls}
+  imageIndex={currentImageIndex}
+  visible={imageViewerVisible}
+  onRequestClose={() => setImageViewerVisible(false)}
+  swipeToCloseEnabled={true}
+  doubleTapToZoomEnabled={true}
+  presentationStyle="fullScreen"
+/>
 
     </ScreenWrapper>
   )
@@ -423,15 +494,20 @@ const styles = StyleSheet.create({
   },
 
   imageWrapper: {
-    borderRadius: 16,
-    overflow: 'hidden',
-    marginBottom: 10,
-  },
+  borderRadius: 18,
+  overflow: 'hidden',
+  marginBottom: 10,
+
+  backgroundColor: theme.colors.card,
+
+  ...theme.shadows.md,
+},
 
   image: {
-    width: '100%',
-    height: '100%',
-  },
+  width: '100%',
+  height: '100%',
+  resizeMode: 'cover',
+},
 
   videoCard: {
     flex: 1,
@@ -487,5 +563,14 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     fontSize: 15,
   },
+
+  splashBtn: {
+  position: 'absolute',
+  top: 8,
+  right: 8,
+  backgroundColor: 'rgba(0,0,0,0.5)',
+  padding: 6,
+  borderRadius: 20,
+}
 
 })
