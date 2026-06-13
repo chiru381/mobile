@@ -2,11 +2,11 @@ import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { useState } from 'react'
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import AIToy from '../../components/AIToy'
 import Card from '../../components/Card'
 import Header from '../../components/Header'
 import ScreenWrapper from '../../components/ScreenWrapper'
 import { theme } from '../../constants/theme'
-
 export default function Home() {
   const router = useRouter()
   const [stats, setStats] = useState({
@@ -96,6 +96,8 @@ export default function Home() {
   return (
     <ScreenWrapper scrollable padding="md">
       <Header title="Dashboard" subtitle="Welcome back!" />
+      
+      
 
       {/* Stats Section */}
       <View style={styles.statsContainer}>
@@ -229,6 +231,9 @@ export default function Home() {
           </TouchableOpacity>
         </View>
       </View>
+      <AIToy
+        message="Welcome to Dashboard"
+      />
     </ScreenWrapper>
   )
 }

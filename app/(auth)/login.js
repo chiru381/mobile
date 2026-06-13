@@ -4,23 +4,19 @@ import * as Google from 'expo-auth-session/providers/google'
 import { useRouter } from 'expo-router'
 import * as WebBrowser from 'expo-web-browser'
 import { useEffect, useState } from 'react'
-import { KeyboardAvoidingView, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native'
 import AIToy from '../../components/AIToy'
 import AppButton from '../../components/AppButton'
 import ScreenWrapper from '../../components/ScreenWrapper'
 import AppTextInput from '../../components/TextInput'
 import { theme } from '../../constants/theme'
 import apiService from '../../utils/apiService'
+import { responsive } from '../../utils/responsive'
 
+const isTablet = responsive.isTablet
 
 
 WebBrowser.maybeCompleteAuthSession()
-
-// const discovery = {
-//   authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
-//   tokenEndpoint: 'https://oauth2.googleapis.com/token',
-//   revocationEndpoint: 'https://oauth2.googleapis.com/revoke',
-// }
 
 export default function Login() {
   const router = useRouter()
@@ -80,22 +76,6 @@ const [request, response, promptAsync] =
 }, [response])
 
 
-// const [request, response, promptAsync] = AuthSession.useAuthRequest(
-//   {
-//     clientId: '275435124465-qlbifmtdqt7ng7c9maqpe5g6t8hfrkh5.apps.googleusercontent.com',
-//     scopes: [
-//       'openid',
-//       'profile',
-//       'email',
-//       // 'https://www.googleapis.com/auth/drive.readonly',
-//     ],
-//     redirectUri,
-//     // responseType: AuthSession.ResponseType.Token,
-//   },
-//   discovery
-// )
-
-
   const handleMPINLogin = async () => {
     if (!validateForm()) return
 
@@ -124,10 +104,6 @@ const [request, response, promptAsync] =
   }
 
   try {
-    // const result = await promptAsync({
-    //   useProxy: true,
-    //   showInRecents: true,
-    // })
     const result = await promptAsync()
 
     console.log("RESULT:", result)
@@ -161,7 +137,7 @@ const [request, response, promptAsync] =
     >
       <ScreenWrapper scrollable padding="lg">
         <AIToy
-          message="Welcome back to your memory app!"
+          message="Please Login"
         />
         
 
@@ -270,20 +246,6 @@ const [request, response, promptAsync] =
               size="lg"
             />
           )}
-
-        <TouchableOpacity
-          onPress={handleGoogleLogin}
-          style={styles.googleButton}
-        >
-          <Ionicons
-            name="logo-google"
-            size={22}
-            color="#DB4437"
-          />
-          <Text style={styles.googleText}>
-            Continue with Google
-          </Text>
-        </TouchableOpacity>
 
           {/* Register Link */}
           <View style={styles.registerContainer}>

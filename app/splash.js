@@ -7,18 +7,37 @@ import {
 } from 'react'
 import {
   Animated,
+  Dimensions,
   Image,
   StyleSheet,
   Text,
   View,
 } from 'react-native'
 import Carousel from 'react-native-reanimated-carousel'
-
+import FloatingHeart from '../components/FloatingHeart'
 import { theme } from '../constants/theme'
+import { responsive } from '../utils/responsive'
 
-import {
-  Dimensions
-} from 'react-native'
+const isTablet = responsive.isTablet
+
+const splashContent = [
+
+  {
+    appName: 'Praveen ❤️ Nandini',
+    tagline: 'Where Forever Starts',
+  },
+
+  {
+    appName: 'Two Hearts, One Journey',
+    tagline: 'A Beautiful Beginning to Forever',
+  },
+
+  {
+    appName: 'Wedding Memories',
+    tagline: 'Capturing Moments That Last a Lifetime',
+  },
+
+]
 
 export default function Splash() {
 
@@ -120,6 +139,30 @@ export default function Splash() {
   pointerEvents="none"
   style={styles.overlay}
 />
+<FloatingHeart
+  left={30}
+  delay={0}
+/>
+
+<FloatingHeart
+  left={90}
+  delay={1500}
+/>
+
+<FloatingHeart
+  left={180}
+  delay={3000}
+/>
+
+<FloatingHeart
+  left={260}
+  delay={500}
+/>
+
+<FloatingHeart
+  left={320}
+  delay={2500}
+/>
 
       <Animated.View
   pointerEvents="box-none"
@@ -137,12 +180,22 @@ export default function Splash() {
 >
 
         <Text style={styles.appName}>
-          Memory
-        </Text>
+  {
+    splashContent[
+      currentIndex
+    ]?.appName ||
+    'Praveen ❤️ Nandini'
+  }
+</Text>
 
-        <Text style={styles.tagline}>
-          Preserve Your Precious Moments
-        </Text>
+<Text style={styles.tagline}>
+  {
+    splashContent[
+      currentIndex
+    ]?.tagline ||
+    'Our Love Story Begins Here'
+  }
+</Text>
         <View style={styles.dotsContainer}>
   {images.map((_, index) => (
     <View

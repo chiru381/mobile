@@ -8,13 +8,15 @@ import {
   View,
 } from 'react-native'
 
+import AIToy from '../../components/AIToy'
 import AppButton from '../../components/AppButton'
-import Header from '../../components/Header'
 import ScreenWrapper from '../../components/ScreenWrapper'
 import AppTextInput from '../../components/TextInput'
-
 import { theme } from '../../constants/theme'
 import apiService from '../../utils/apiService'
+import { responsive } from '../../utils/responsive'
+
+const isTablet = responsive.isTablet
 
 export default function Register() {
   const router = useRouter()
@@ -115,12 +117,12 @@ export default function Register() {
       style={styles.container}
     >
       <ScreenWrapper scrollable padding="lg">
-        <Header title="Create Account" />
+        <AIToy
+          message="Please Register"
+        />
 
         <View style={styles.formContainer}>
-          <Text style={styles.subtitle}>
-            Create your account to continue
-          </Text>
+          
 
           {/* NAME */}
 

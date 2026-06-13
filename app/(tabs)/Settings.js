@@ -50,28 +50,35 @@ export default function Settings() {
     },
     {
       id: '4',
-      title: 'Auto Backup',
-      description: 'Automatically backup your memories',
-      icon: 'cloud-upload',
-      key: 'autoBackup',
-      type: 'toggle',
-    },
-    {
-      id: '5',
-      title: 'Dark Mode',
-      description: 'Enable dark theme',
-      icon: 'moon',
-      key: 'darkMode',
-      type: 'toggle',
-    },
-    {
-      id: '6',
-      title: 'Cloud Sync',
-      description: 'Sync data across devices',
-      icon: 'cloud',
-      key: 'cloudsync',
-      type: 'toggle',
-    },
+  title: 'Change MPIN',
+  description: 'Update your 4-digit MPIN',
+  icon: 'key',
+},
+
+    // {
+    //   id: '4',
+    //   title: 'Auto Backup',
+    //   description: 'Automatically backup your memories',
+    //   icon: 'cloud-upload',
+    //   key: 'autoBackup',
+    //   type: 'toggle',
+    // },
+    // {
+    //   id: '5',
+    //   title: 'Dark Mode',
+    //   description: 'Enable dark theme',
+    //   icon: 'moon',
+    //   key: 'darkMode',
+    //   type: 'toggle',
+    // },
+    // {
+    //   id: '6',
+    //   title: 'Cloud Sync',
+    //   description: 'Sync data across devices',
+    //   icon: 'cloud',
+    //   key: 'cloudsync',
+    //   type: 'toggle',
+    // },
   ]
 
   const renderSettingItem = ({ item }) => (
@@ -138,7 +145,7 @@ export default function Settings() {
       {/* Danger Zone */}
       <View style={styles.dangerSection}>
         <Text style={styles.dangerTitle}>Danger Zone</Text>
-        <AppButton
+        {/* <AppButton
           title="Clear Cache"
           variant="danger"
           fullWidth
@@ -151,7 +158,7 @@ export default function Settings() {
           fullWidth
           size="sm"
           onPress={() => alert('Settings reset')}
-        />
+        /> */}
         <AppButton
           title="Logout"
           variant="danger"
