@@ -1,12 +1,12 @@
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
+import { useEffect, useState } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import Card from '../components/Card'
 import Divider from '../components/Divider'
 import Header from '../components/Header'
 import ScreenWrapper from '../components/ScreenWrapper'
 import { theme } from '../constants/theme'
-import { useEffect, useState } from 'react'
 import apiService from '../utils/apiService'
 
 export default function About() {
@@ -64,7 +64,7 @@ if (loading) {
       <Card padding="lg" shadow="md" style={styles.descriptionCard}>
         <Text style={styles.cardTitle}>About Memory App</Text>
         <Text style={styles.description}>
-          {aboutData?.description || 'Memory App is your personal digital keeper of precious moments. Store, organize, and relive your favorite memories with advanced features like mood tracking, travel logs, and secure app lock protection.'}
+          {aboutData?.description || 'Memory App is your personal digital keeper of precious moments. Store, organize, and relive your favorite memories with advanced features like travel logs, and secure app lock protection.'}
         </Text>
       </Card>
 
@@ -77,9 +77,7 @@ if (loading) {
             '🎬 Video Memories - Store and play videos',
             '✈️ Travel Logs - Document your adventures',
             '💍 Wedding Moments - Preserve special days',
-            '😊 Mood Tracker - Track your emotional journey',
             '📅 Calendar Notes - Daily diary entries',
-            '👥 Face Album - People and face recognition',
             '🔒 App Lock - Secure your memories',
           ].map((feature, index) => (
             <View key={index} style={styles.featureItem}>

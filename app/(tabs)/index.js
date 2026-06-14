@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { useState } from 'react'
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import AIToy from '../../components/AIToy'
 import Card from '../../components/Card'
 import Header from '../../components/Header'
@@ -12,7 +12,6 @@ export default function Home() {
   const [stats, setStats] = useState({
     memories: 156,
     albums: 12,
-    mood: 'Happy',
     notes: 23,
   })
 
@@ -47,31 +46,10 @@ export default function Home() {
     },
     {
       id: '5',
-      title: 'Mood Tracker',
-      icon: 'happy',
-      color: theme.colors.warning,
-      route: '/Mood',
-    },
-    {
-      id: '6',
       title: 'Calendar Notes',
       icon: 'calendar',
       color: theme.colors.info,
       route: '/CalendarNotes',
-    },
-    {
-      id: '7',
-      title: 'Face Album',
-      icon: 'people',
-      color: theme.colors.primary,
-      route: '/face-album',
-    },
-    {
-      id: '8',
-      title: 'Export/Import',
-      icon: 'cloud-upload',
-      color: theme.colors.primaryLight,
-      route: '/export-import',
     },
   ]
 
@@ -95,7 +73,23 @@ export default function Home() {
 
   return (
     <ScreenWrapper scrollable padding="md">
-      <Header title="Dashboard" subtitle="Welcome back!" />
+      <Header
+  title="Dashboard"
+  subtitle="Welcome back!"
+  rightIcon={
+    <Image
+      source={{
+        uri: 'https://picsum.photos/200/200',
+      }}
+      style={{
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+      }}
+    />
+  }
+  onRightPress={() => router.push('/Profile')}
+/>
       
       
 
@@ -121,63 +115,8 @@ export default function Home() {
         </Card>
       </View>
 
-      {/* Mood Status */}
-      {/* Mood Status */}
 
-<Card
-  padding="lg"
-  shadow="md"
-  style={styles.moodCard}
-  onPress={() => router.push('/Mood')}
->
 
-  <View style={styles.moodContent}>
-
-    {/* ICON */}
-
-    <View style={styles.moodIconContainer}>
-
-      <Ionicons
-        name="happy"
-        size={38}
-        color={theme.colors.warning}
-      />
-
-    </View>
-
-    {/* TEXT */}
-
-    <View style={styles.moodText}>
-
-      <Text style={styles.moodLabel}>
-        TODAY'S MOOD
-      </Text>
-
-      <Text style={styles.moodValue}>
-        {stats.mood}
-      </Text>
-
-      <Text style={styles.moodSubText}>
-        Tap to track your feelings
-      </Text>
-
-    </View>
-
-    {/* RIGHT ICON */}
-
-    <View style={styles.moodArrowBox}>
-
-      <Ionicons
-        name="chevron-forward"
-        size={22}
-        color={theme.colors.subText}
-      />
-
-    </View>
-
-  </View>
-
-</Card>
 
       {/* Features Grid */}
       <View style={styles.featuresSection}>
@@ -196,28 +135,7 @@ export default function Home() {
       <View style={styles.quickActionsSection}>
         <Text style={styles.sectionTitle}>Quick Actions</Text>
         <View style={styles.quickActionsRow}>
-          <TouchableOpacity
-            style={styles.quickActionBtn}
-            onPress={() => router.push('/Settings')}
-          >
-            <Ionicons
-              name="settings"
-              size={24}
-              color={theme.colors.primary}
-            />
-            <Text style={styles.quickActionText}>Settings</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.quickActionBtn}
-            onPress={() => router.push('/Profile')}
-          >
-            <Ionicons
-              name="person"
-              size={24}
-              color={theme.colors.primary}
-            />
-            <Text style={styles.quickActionText}>Profile</Text>
-          </TouchableOpacity>
+         
           <TouchableOpacity
             style={styles.quickActionBtn}
             onPress={() => router.push('/About')}
@@ -277,99 +195,6 @@ const styles = StyleSheet.create({
     height: 45,
     backgroundColor: theme.colors.border,
   },
-
-  // ================= MOOD CARD =================
-
-moodCard: {
-  marginBottom: theme.sizes.lg,
-
-  borderRadius: 26,
-
-  backgroundColor: theme.colors.card,
-
-  borderWidth: 1,
-  borderColor: `${theme.colors.warning}25`,
-
-  overflow: 'hidden',
-
-  shadowColor: '#000',
-  shadowOffset: {
-    width: 0,
-    height: 6,
-  },
-  shadowOpacity: 0.08,
-  shadowRadius: 8,
-
-  elevation: 4,
-},
-
-moodContent: {
-  flexDirection: 'row',
-  alignItems: 'center',
-
-  paddingVertical: 6,
-},
-
-// LEFT ICON BOX
-
-moodIconContainer: {
-  width: 72,
-  height: 72,
-
-  borderRadius: 24,
-
-  backgroundColor: `${theme.colors.warning}18`,
-
-  justifyContent: 'center',
-  alignItems: 'center',
-},
-
-// TEXT AREA
-
-moodText: {
-  flex: 1,
-  marginLeft: 18,
-},
-
-moodLabel: {
-  fontSize: 13,
-  fontWeight: '600',
-
-  color: theme.colors.subText,
-
-  marginBottom: 6,
-
-  letterSpacing: 0.3,
-},
-
-moodValue: {
-  fontSize: 28,
-  fontWeight: '800',
-
-  color: theme.colors.text,
-},
-
-moodSubText: {
-  marginTop: 4,
-
-  fontSize: 13,
-
-  color: theme.colors.subText,
-},
-
-// RIGHT ARROW
-
-moodArrowBox: {
-  width: 42,
-  height: 42,
-
-  borderRadius: 14,
-
-  backgroundColor: theme.colors.bgLight,
-
-  justifyContent: 'center',
-  alignItems: 'center',
-},
 
   // ================= FEATURES =================
 

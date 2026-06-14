@@ -1,25 +1,28 @@
 import { Ionicons } from '@expo/vector-icons'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter } from 'expo-router'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import AppButton from '../components/AppButton'
 import Card from '../components/Card'
-import Divider from '../components/Divider'
 import Header from '../components/Header'
 import ScreenWrapper from '../components/ScreenWrapper'
 import AppTextInput from '../components/TextInput'
 import { theme } from '../constants/theme'
 
 export default function Profile() {
+  // avatar:
+  // user.profileImage ||
+  // 'https://picsum.photos/200/200'
   const router = useRouter()
   const [isEditing, setIsEditing] = useState(false)
   const [profile, setProfile] = useState({
-    name: 'John Doe',
-    email: 'john@example.com',
-    phone: '+1 (555) 123-4567',
-    bio: 'Photography enthusiast and memory keeper',
-    avatar: 'https://picsum.photos/200/200',
-  })
+  name: '',
+  email: '',
+  phone: '',
+  bio: '',
+  avatar: 'https://picsum.photos/200/200',
+})
   const [formData, setFormData] = useState(profile)
 
   const handleSaveProfile = () => {
@@ -27,6 +30,40 @@ export default function Profile() {
     setIsEditing(false)
     alert('Profile updated successfully')
   }
+
+  const handleLogout = async () => {
+  await AsyncStorage.removeItem('token')
+  await AsyncStorage.removeItem('user')
+
+  router.replace('/login')
+}
+
+  useEffect(() => {
+  loadUser()
+}, [])
+
+const loadUser = async () => {
+  try {
+    const userData = await AsyncStorage.getItem('user')
+
+    if (userData) {
+      const user = JSON.parse(userData)
+
+      const userProfile = {
+        name: user.name || '',
+        email: user.email || '',
+        phone: user.mobile || '',
+        // bio: 'Logged in using MPIN',
+        avatar: 'https://picsum.photos/200/200',
+      }
+
+      setProfile(userProfile)
+      setFormData(userProfile)
+    }
+  } catch (error) {
+    console.log('Load User Error:', error)
+  }
+}
 
   return (
     <ScreenWrapper scrollable padding="md">
@@ -73,25 +110,7 @@ export default function Profile() {
             </View>
           </Card>
 
-          {/* Stats */}
-          <Card padding="lg" shadow="md" style={styles.statsCard}>
-            <View style={styles.statsRow}>
-              <View style={styles.statItem}>
-                <Text style={styles.statNumber}>156</Text>
-                <Text style={styles.statLabel}>Memories</Text>
-              </View>
-              <Divider marginVertical="base" />
-              <View style={styles.statItem}>
-                <Text style={styles.statNumber}>12</Text>
-                <Text style={styles.statLabel}>Albums</Text>
-              </View>
-              <Divider marginVertical="base" />
-              <View style={styles.statItem}>
-                <Text style={styles.statNumber}>45</Text>
-                <Text style={styles.statLabel}>Days Active</Text>
-              </View>
-            </View>
-          </Card>
+          
 
           {/* Edit Button */}
           <AppButton
@@ -99,6 +118,12 @@ export default function Profile() {
             onPress={() => setIsEditing(true)}
             fullWidth
           />
+          <AppButton
+  title="Logout"
+  onPress={handleLogout}
+  variant="secondary"
+  fullWidth
+/>
 
           {/* Profile Settings */}
           <View style={styles.settingsSection}>
@@ -106,15 +131,6 @@ export default function Profile() {
             <TouchableOpacity style={styles.settingsOption}>
               <Ionicons name="key" size={20} color={theme.colors.primary} />
               <Text style={styles.settingsText}>Change Password</Text>
-              <Ionicons
-                name="chevron-forward"
-                size={20}
-                color={theme.colors.subText}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.settingsOption}>
-              <Ionicons name="eye" size={20} color={theme.colors.primary} />
-              <Text style={styles.settingsText}>Privacy Settings</Text>
               <Ionicons
                 name="chevron-forward"
                 size={20}

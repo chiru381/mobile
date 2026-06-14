@@ -51,16 +51,7 @@ export default function TabLayout() {
         }}
       />
 
-      {/* Mood Tab */}
-      <Tabs.Screen
-        name="Mood"
-        options={{
-          title: 'Mood',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="happy" size={24} color={color} />
-          ),
-        }}
-      />
+      
 
       <Tabs.Screen
         name="Upload"

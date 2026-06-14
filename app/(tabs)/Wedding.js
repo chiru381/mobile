@@ -9,7 +9,7 @@ import { theme } from '../../constants/theme'
 
 export default function Wedding() {
   const [weddingData] = useState({
-    couple: 'Sarah & John',
+    couple: 'Praveen & Nandini',
     date: 'March 15, 2024',
     venue: 'Grand Ballroom, New York',
     videos: 8,

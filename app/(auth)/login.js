@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons'
 // import * as AuthSession from 'expo-auth-session'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as Google from 'expo-auth-session/providers/google'
 import { useRouter } from 'expo-router'
 import * as WebBrowser from 'expo-web-browser'
@@ -76,24 +77,37 @@ const [request, response, promptAsync] =
 }, [response])
 
 
-  const handleMPINLogin = async () => {
-    if (!validateForm()) return
+ const handleMPINLogin = async () => {
+  if (!validateForm()) return
 
-    setLoading(true)
-    try {
-      const response = await apiService.loginWithMpin(formData.phone, formData.mpin)
-      if (response.success && response.token) {
-        // Store token and navigate to home
-        router.replace('/(tabs)')
-      } else {
-        alert(response.message || 'Login failed')
-      }
-    } catch (error) {
-      alert('Login error: ' + error.message)
-    } finally {
-      setLoading(false)
+  setLoading(true)
+
+  try {
+    const response = await apiService.loginWithMpin(
+      formData.phone,
+      formData.mpin
+    )
+
+    if (response.success) {
+      // Save token
+      await AsyncStorage.setItem('token', response.token)
+
+      // Save user details
+      await AsyncStorage.setItem(
+        'user',
+        JSON.stringify(response.user)
+      )
+
+      router.replace('/(tabs)')
+    } else {
+      alert(response.message || 'Login failed')
     }
+  } catch (error) {
+    alert(error.message)
+  } finally {
+    setLoading(false)
   }
+}
 
   const handleGoogleLogin = async () => {
   console.log("Request:", request)

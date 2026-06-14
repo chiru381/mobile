@@ -15,7 +15,6 @@ export default function NotificationSettings() {
     pushNotifications: true,
     emailNotifications: true,
     uploadReminders: true,
-    moodReminders: true,
     backupNotifications: true,
     shareNotifications: true,
     holidayReminders: false,
@@ -51,13 +50,6 @@ export default function NotificationSettings() {
       icon: 'cloud-upload',
       key: 'uploadReminders',
     },
-    // {
-    //   id: '4',
-    //   title: 'Mood Check-in',
-    //   description: 'Daily mood tracker reminders',
-    //   icon: 'happy',
-    //   key: 'moodReminders',
-    // },
     // {
     //   id: '5',
     //   title: 'Backup Notifications',
