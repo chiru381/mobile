@@ -1,41 +1,77 @@
 import { Ionicons } from '@expo/vector-icons'
-
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { useFocusEffect } from 'expo-router'
+import { VideoView, useVideoPlayer } from 'expo-video'
 import { useCallback, useState } from 'react'
-
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Image,
+  Modal,
   StyleSheet,
   Text,
   TouchableOpacity,
   View
 } from 'react-native'
-
-
-import { useFocusEffect } from 'expo-router'
-
-import Header from '../../components/Header'
-import ScreenWrapper from '../../components/ScreenWrapper'
-
-import { theme } from '../../constants/theme'
-
-import { responsive } from '../../utils/responsive'
-
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import {
-  Alert,
-} from 'react-native'
 import ImageViewing from 'react-native-image-viewing'
 import Animated, {
   FadeInDown,
 } from 'react-native-reanimated'
+import Header from '../../components/Header'
+import ScreenWrapper from '../../components/ScreenWrapper'
+import { theme } from '../../constants/theme'
 import apiService from '../../utils/apiService'
+import { responsive } from '../../utils/responsive'
+
+const VideoThumbnail = ({ uri }) => {
+
+  const player = useVideoPlayer(uri, player => {
+    player.pause()
+  })
+
+  return (
+    <VideoView
+      player={player}
+      style={{
+        width: '100%',
+        height: '100%',
+      }}
+      nativeControls={false}
+      allowsFullscreen={false}
+    />
+  )
+}
+
+const FullScreenVideo = ({ uri }) => {
+
+  const player = useVideoPlayer(
+    uri,
+    player => {
+      player.play()
+    }
+  )
+
+  return (
+    <VideoView
+      player={player}
+      style={{
+        width: '100%',
+        height: '100%',
+      }}
+      nativeControls
+      fullscreenOptions={{
+    enable: true,
+  }}
+    />
+  )
+}
+
 
 export default function Gallery() {
 
   const [galleryData, setGalleryData] = useState([])
-
+  const [selectedVideo, setSelectedVideo] = useState(null)
   const [loading, setLoading] = useState(true)
 
   const [openImages, setOpenImages] = useState(false)
@@ -139,6 +175,7 @@ const showSplashOptions = (item) => {
   const videoData = galleryData.filter(
     item => item.fileType === 'video'
   )
+  console.log(videoData)
 
   // ================= GRID =================
 
@@ -206,6 +243,51 @@ const showSplashOptions = (item) => {
 </TouchableOpacity>
     </Animated.View>
   )
+
+  const renderVideoItem = ({ item }) => (
+
+  <Animated.View
+    entering={FadeInDown.duration(300)}
+  >
+
+    <TouchableOpacity
+      style={[
+        styles.imageWrapper,
+        {
+          width: imageSize,
+          height: imageSize,
+        },
+      ]}
+      activeOpacity={0.8}
+      onPress={() => {
+        console.log(
+    'Video clicked:',
+    item.fileUrl
+  )
+        setSelectedVideo(
+          item.fileUrl
+        )
+
+      }}
+    >
+
+      <VideoThumbnail
+        uri={item.fileUrl}
+      />
+
+      <View style={styles.playIcon}>
+        <Ionicons
+          name="play-circle"
+          size={42}
+          color="#fff"
+        />
+      </View>
+
+    </TouchableOpacity>
+
+  </Animated.View>
+
+)
 
   // ================= MAIN =================
 
@@ -347,7 +429,7 @@ const showSplashOptions = (item) => {
 
                 <FlatList
                   data={videoData}
-                  renderItem={renderGalleryItem}
+                  renderItem={renderVideoItem}
                   keyExtractor={(item) => item._id}
                   numColumns={gridColumns}
                   scrollEnabled={false}
@@ -361,84 +443,7 @@ const showSplashOptions = (item) => {
         )
       }
 
-      {/* ================= PREVIEW MODAL ================= */}
-
-      {/* <Modal
-        visible={!!selectedItem}
-        transparent
-        animationType="fade"
-      >
-
-        <View style={styles.modalContainer}>
-
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={() => setSelectedItem(null)}
-          >
-
-            <Ionicons
-              name="close"
-              size={34}
-              color="#fff"
-            />
-
-          </TouchableOpacity>
-
-          {
-            selectedItem && (
-
-              <ScrollView
-                style={styles.modalContent}
-                contentContainerStyle={
-                  styles.modalContentContainer
-                }
-                scrollEnabled={false}
-              >
-
-                {
-                  selectedItem.fileType === 'image' ? (
-
-                    <Image
-                      source={{
-                        uri: selectedItem.fileUrl
-                      }}
-                      style={styles.modalImage}
-                    />
-
-                  ) : (
-
-                    <Video
-                      source={{
-                        uri: selectedItem.fileUrl
-                      }}
-                      style={styles.videoPlayer}
-                      useNativeControls
-                      resizeMode="contain"
-                      shouldPlay
-                    />
-
-                  )
-                }
-
-                <View style={styles.photoDetails}>
-
-                  <Text style={styles.photoDate}>
-                    {
-                      new Date(
-                        selectedItem.createdAt
-                      ).toDateString()
-                    }
-                  </Text>
-
-                </View>
-
-              </ScrollView>
-            )
-          }
-
-        </View>
-
-      </Modal> */}
+     
 
       <ImageViewing
   images={imageUrls}
@@ -449,6 +454,50 @@ const showSplashOptions = (item) => {
   doubleTapToZoomEnabled={true}
   presentationStyle="fullScreen"
 />
+
+<Modal
+  visible={!!selectedVideo}
+  animationType="slide"
+  transparent={false}
+  onRequestClose={() =>
+    setSelectedVideo(null)
+  }
+>
+
+  <View
+    style={{
+      flex: 1,
+      backgroundColor: '#000',
+    }}
+  >
+
+    <TouchableOpacity
+      onPress={() =>
+        setSelectedVideo(null)
+      }
+      style={{
+        position: 'absolute',
+        top: 50,
+        right: 20,
+        zIndex: 1000,
+      }}
+    >
+      <Ionicons
+        name="close"
+        size={35}
+        color="#fff"
+      />
+    </TouchableOpacity>
+
+    {selectedVideo && (
+      <FullScreenVideo
+        uri={selectedVideo}
+      />
+    )}
+
+  </View>
+
+</Modal>
 
     </ScreenWrapper>
   )
@@ -586,6 +635,18 @@ const styles = StyleSheet.create({
   backgroundColor: 'rgba(0,0,0,0.5)',
   padding: 6,
   borderRadius: 20,
-}
+},
+playIcon: {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+
+  justifyContent: 'center',
+  alignItems: 'center',
+
+  backgroundColor: 'rgba(0,0,0,0.2)',
+},
 
 })
