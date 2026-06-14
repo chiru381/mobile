@@ -22,13 +22,15 @@ import { theme } from '../../constants/theme'
 
 import { responsive } from '../../utils/responsive'
 
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import {
+  Alert,
+} from 'react-native'
 import ImageViewing from 'react-native-image-viewing'
 import Animated, {
   FadeInDown,
 } from 'react-native-reanimated'
 import apiService from '../../utils/apiService'
-
-import AsyncStorage from '@react-native-async-storage/async-storage'
 
 export default function Gallery() {
 
@@ -43,37 +45,20 @@ export default function Gallery() {
   const [imageViewerVisible, setImageViewerVisible] = useState(false)
 const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
-const saveSplashImage = async (item) => {
+const saveSplashImage = async (
+  item,
+  screenNumber
+) => {
   try {
 
-    const storedImages =
-      await AsyncStorage.getItem(
-        'splashImages'
-      )
-
-    const existing =
-      storedImages
-        ? JSON.parse(storedImages)
-        : []
-
-    const updated = [
-
-      ...existing.filter(
-        img =>
-          img.fileUrl !== item.fileUrl
-      ),
-
-      item,
-
-    ].slice(-3)
-
     await AsyncStorage.setItem(
-      'splashImages',
-      JSON.stringify(updated)
+      `splashScreen${screenNumber}`,
+      JSON.stringify(item)
     )
 
-    alert(
-      'Added to Splash Screen'
+    Alert.alert(
+      'Success',
+      `Image set for Splash Screen ${screenNumber}`
     )
 
   } catch (error) {
@@ -81,6 +66,36 @@ const saveSplashImage = async (item) => {
     console.log(error)
 
   }
+}
+
+const showSplashOptions = (item) => {
+
+  Alert.alert(
+    'Set Splash Screen',
+    'Choose splash screen position',
+    [
+      {
+        text: 'Splash Screen 1',
+        onPress: () =>
+          saveSplashImage(item, 1),
+      },
+      {
+        text: 'Splash Screen 2',
+        onPress: () =>
+          saveSplashImage(item, 2),
+      },
+      {
+        text: 'Splash Screen 3',
+        onPress: () =>
+          saveSplashImage(item, 3),
+      },
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+    ]
+  )
+
 }
 
   // ================= GET FILES =================
@@ -177,7 +192,7 @@ const saveSplashImage = async (item) => {
 
     event.stopPropagation()
 
-    saveSplashImage(item)
+    showSplashOptions(item)
 
   }}
 >

@@ -76,29 +76,38 @@ export default function Splash() {
   }, [])
 
   const loadImages = async () => {
+
   try {
 
-    const storedImages =
+    const img1 =
       await AsyncStorage.getItem(
-        'splashImages'
+        'splashScreen1'
       )
 
-    const data =
-      storedImages
-        ? JSON.parse(storedImages)
-        : []
+    const img2 =
+      await AsyncStorage.getItem(
+        'splashScreen2'
+      )
 
-    setImages(data)
+    const img3 =
+      await AsyncStorage.getItem(
+        'splashScreen3'
+      )
+
+    const splashImages = [
+      img1 ? JSON.parse(img1) : null,
+      img2 ? JSON.parse(img2) : null,
+      img3 ? JSON.parse(img3) : null,
+    ].filter(Boolean)
+
+    setImages(splashImages)
 
   } catch (error) {
 
-    console.log(
-      'Error loading splash images:',
-      error
-    )
+    console.log(error)
 
-    setImages([])
   }
+
 }
 
   return (
