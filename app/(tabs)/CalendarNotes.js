@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   FlatList,
   StyleSheet,
@@ -14,10 +14,36 @@ import Header from '../../components/Header'
 import ScreenWrapper from '../../components/ScreenWrapper'
 import AppTextInput from '../../components/TextInput'
 
+import ScrollToTopButton from '../../components/ScrollToTopButton'
 import { theme } from '../../constants/theme'
 import apiService from '../../utils/apiService'
 
+const years = Array.from(
+  { length: 50 },
+  (_, i) => 2000 + i
+)
+
+const monthNames = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+]
+
 export default function CalendarNotes() {
+
+const scrollRef = useRef(null)
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
+
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
 
   const [selectedDate, setSelectedDate] = useState(null)
 
@@ -57,26 +83,11 @@ export default function CalendarNotes() {
 
   // ================= MONTH DATA =================
 
-  const monthNames = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
-  ]
-
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
-  const year = currentDate.getFullYear()
+  const year = selectedYear
 
-  const month = currentDate.getMonth()
+const month = selectedMonth
 
   const daysInMonth = new Date(year, month + 1, 0).getDate()
 
@@ -114,25 +125,7 @@ export default function CalendarNotes() {
     return days
   }
 
-  // ================= CHANGE MONTH =================
 
-  const changeMonth = (type) => {
-
-    if (type === 'next') {
-
-      setCurrentDate(
-        new Date(year, month + 1, 1)
-      )
-
-    } else {
-
-      setCurrentDate(
-        new Date(year, month - 1, 1)
-      )
-    }
-
-    setSelectedDate(null)
-  }
 
   // ================= SAVE NOTE =================
 
@@ -294,8 +287,8 @@ export default function CalendarNotes() {
   // ================= MAIN =================
 
   return (
-
-    <ScreenWrapper scrollable padding="md">
+<>
+    <ScreenWrapper ref={scrollRef} scrollable padding="md">
 
       <Header
         title="Calendar Notes"
@@ -312,45 +305,84 @@ export default function CalendarNotes() {
 
         {/* HEADER */}
 
-        <View style={styles.calendarHeader}>
+        <View style={styles.selectorContainer}>
 
-          <TouchableOpacity
-            style={styles.monthButton}
-            onPress={() =>
-              changeMonth('prev')
-            }
-          >
+  <TouchableOpacity
+    style={styles.selectorBox}
+    onPress={() => {
+      if (selectedYear > 2000) {
+        setSelectedYear(
+          selectedYear - 1
+        )
+      }
+    }}
+  >
+    <Ionicons
+      name="chevron-back"
+      size={20}
+      color={theme.colors.text}
+    />
+  </TouchableOpacity>
 
-            <Ionicons
-              name="chevron-back"
-              size={22}
-              color={theme.colors.text}
-            />
+  <Text style={styles.selectorText}>
+    {selectedYear}
+  </Text>
 
-          </TouchableOpacity>
+  <TouchableOpacity
+    style={styles.selectorBox}
+    onPress={() =>
+      setSelectedYear(
+        selectedYear + 1
+      )
+    }
+  >
+    <Ionicons
+      name="chevron-forward"
+      size={20}
+      color={theme.colors.text}
+    />
+  </TouchableOpacity>
 
-          <Text style={styles.calendarTitle}>
+</View>
 
-            {monthNames[month]} {year}
+<FlatList
+  horizontal
+  showsHorizontalScrollIndicator={false}
+  data={monthNames}
+  keyExtractor={(item) => item}
+  contentContainerStyle={{
+    paddingVertical: 12,
+  }}
+  renderItem={({ item, index }) => (
 
-          </Text>
+    <TouchableOpacity
+      style={[
+        styles.monthChip,
 
-          <TouchableOpacity
-            style={styles.monthButton}
-            onPress={() =>
-              changeMonth('next')
-            }
-          >
+        selectedMonth === index &&
+          styles.monthChipActive,
+      ]}
+      onPress={() =>
+        setSelectedMonth(index)
+      }
+    >
 
-            <Ionicons
-              name="chevron-forward"
-              size={22}
-              color={theme.colors.text}
-            />
+      <Text
+        style={[
+          styles.monthChipText,
 
-          </TouchableOpacity>
+          selectedMonth === index && {
+            color: '#fff',
+          },
+        ]}
+      >
+        {item}
+      </Text>
 
-        </View>
+    </TouchableOpacity>
+
+  )}
+/>
 
         {/* WEEK DAYS */}
 
@@ -475,6 +507,15 @@ export default function CalendarNotes() {
       </View>
 
     </ScreenWrapper>
+    <ScrollToTopButton
+  onPress={() =>
+    scrollRef.current?.scrollTo({
+      y: 0,
+      animated: true,
+    })
+  }
+/>
+</>
   )
 }
 
@@ -569,38 +610,21 @@ weekDay: {
 
 calendarRow: {
 
-  justifyContent: 'space-between',
-
   marginBottom: 10,
 },
 
 emptyDay: {
-
-  width: '13.5%',
-
+  width: '14.2857%',
   height: 54,
-
-  marginBottom: 8,
 },
 
 dayButton: {
-
-  width: '13.5%',
-
+  width: '14.2857%',
   aspectRatio: 1,
-
-  borderRadius: 16,
-
   justifyContent: 'center',
-
   alignItems: 'center',
-
   backgroundColor: theme.colors.bgLight,
-
-  borderWidth: 1,
-
-  borderColor: 'transparent',
-
+  borderRadius: 16,
   marginBottom: 8,
 },
 
@@ -765,4 +789,44 @@ noteDot: {
     color: theme.colors.text,
   },
 
+  selectorContainer: {
+  flexDirection: 'row',
+  justifyContent: 'center',
+  alignItems: 'center',
+  marginBottom: 15,
+},
+
+selectorBox: {
+  width: 42,
+  height: 42,
+  borderRadius: 12,
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: theme.colors.bgLight,
+},
+
+selectorText: {
+  fontSize: 20,
+  fontWeight: '700',
+  marginHorizontal: 20,
+  color: theme.colors.text,
+},
+
+monthChip: {
+  paddingHorizontal: 16,
+  paddingVertical: 10,
+  borderRadius: 20,
+  backgroundColor: theme.colors.bgLight,
+  marginRight: 10,
+},
+
+monthChipActive: {
+  backgroundColor: theme.colors.primary,
+},
+
+monthChipText: {
+  fontSize: 14,
+  fontWeight: '600',
+  color: theme.colors.text,
+},
 })
