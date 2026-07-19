@@ -52,7 +52,9 @@ export default function Settings() {
       id: '4',
   title: 'Change MPIN',
   description: 'Update your 4-digit MPIN',
-  icon: 'key',
+  icon: "key",
+  type: "screen",
+  onPress: () => router.push("/change-mpin"),
 },
 
     // {
