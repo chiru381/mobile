@@ -51,6 +51,13 @@ export default function Home() {
       color: theme.colors.info,
       route: '/CalendarNotes',
     },
+    {
+      id: '6',
+      title: 'Chat',
+      icon: 'chatbubble-outline',
+      color: theme.colors.info,
+      route: '/Chat',
+    }
   ]
 
   const renderFeature = ({ item }) => (

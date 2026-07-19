@@ -78,36 +78,37 @@ const [request, response, promptAsync] =
 
 
  const handleMPINLogin = async () => {
-  if (!validateForm()) return
+  if (!validateForm()) return;
 
-  setLoading(true)
+  setLoading(true);
+  console.log("Login Started");
 
   try {
+    console.log("Calling API...");
+
     const response = await apiService.loginWithMpin(
       formData.phone,
       formData.mpin
-    )
+    );
+
+    console.log("API Response:", response);
 
     if (response.success) {
-      // Save token
-      await AsyncStorage.setItem('token', response.token)
+      await AsyncStorage.setItem("token", response.token);
+      await AsyncStorage.setItem("user", JSON.stringify(response.user));
 
-      // Save user details
-      await AsyncStorage.setItem(
-        'user',
-        JSON.stringify(response.user)
-      )
-
-      router.replace('/(tabs)')
+      router.replace("/(tabs)");
     } else {
-      alert(response.message || 'Login failed')
+      alert(response.message);
     }
-  } catch (error) {
-    alert(error.message)
+  } catch (err) {
+    console.log("Login Error:", err);
+    alert(err.message);
   } finally {
-    setLoading(false)
+    console.log("Loading false");
+    setLoading(false);
   }
-}
+};
 
   const handleGoogleLogin = async () => {
   console.log("Request:", request)
