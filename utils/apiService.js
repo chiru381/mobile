@@ -46,7 +46,7 @@ export const apiService = {
     })
   },
 
-   loginWithMpin: async (mobile, mpin) => {
+   loginWithMpin: async (mobile, mpin, deviceId) => {
     return await request(`${API_BASE_URL}/auth/login-mpin`, {
       method: 'POST',
       headers: {
@@ -55,9 +55,24 @@ export const apiService = {
       body: JSON.stringify({
         mobile,
         mpin,
+        deviceId,
       }),
     })
   },
+
+  changeMPIN: async (userId, oldMPIN, newMPIN) => {
+  return await request(`${API_BASE_URL}/auth/change-mpin`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      userId,
+      oldMPIN,
+      newMPIN,
+    }),
+  });
+},
 
   loginWithFingerprint: async (fingerprintId) => {
     return await request(`${API_BASE_URL}/auth/login-fingerprint`, {

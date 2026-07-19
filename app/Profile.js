@@ -31,7 +31,7 @@ export default function Profile() {
     alert('Profile updated successfully')
   }
 
-  const handleLogout = async () => {
+   const handleLogout = async () => {
   await AsyncStorage.removeItem('token')
   await AsyncStorage.removeItem('user')
 

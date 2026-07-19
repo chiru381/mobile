@@ -81,31 +81,47 @@ const [request, response, promptAsync] =
   if (!validateForm()) return;
 
   setLoading(true);
-  console.log("Login Started");
 
   try {
-    console.log("Calling API...");
+    const deviceId =
+      Platform.OS + "-" + Date.now();
 
     const response = await apiService.loginWithMpin(
       formData.phone,
-      formData.mpin
+      formData.mpin,
+      deviceId
     );
 
-    console.log("API Response:", response);
-
     if (response.success) {
-      await AsyncStorage.setItem("token", response.token);
-      await AsyncStorage.setItem("user", JSON.stringify(response.user));
+
+      await AsyncStorage.setItem(
+        "accessToken",
+        response.accessToken
+      );
+
+      await AsyncStorage.setItem(
+        "refreshToken",
+        response.refreshToken
+      );
+
+      await AsyncStorage.setItem(
+        "user",
+        JSON.stringify(response.user)
+      );
+
+      await AsyncStorage.setItem(
+        "deviceId",
+        deviceId
+      );
 
       router.replace("/(tabs)");
     } else {
       alert(response.message);
     }
   } catch (err) {
-    console.log("Login Error:", err);
+    console.log(err);
     alert(err.message);
   } finally {
-    console.log("Loading false");
     setLoading(false);
   }
 };

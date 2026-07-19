@@ -110,6 +110,21 @@ export default function Splash() {
 
 }
 
+const handleContinue = async () => {
+  try {
+    const accessToken = await AsyncStorage.getItem("accessToken");
+    const refreshToken = await AsyncStorage.getItem("refreshToken");
+
+    if (accessToken && refreshToken) {
+      router.replace("/(tabs)");
+    } else {
+      router.replace("/(auth)/login");
+    }
+  } catch (error) {
+    router.replace("/(auth)/login");
+  }
+};
+
   return (
 
     <View style={styles.container}>
@@ -229,9 +244,7 @@ export default function Splash() {
 
       <Text
         style={styles.continueBtn}
-        onPress={() =>
-          router.replace('/(auth)/login')
-        }
+        onPress={handleContinue}
       >
         Continue →
       </Text>
