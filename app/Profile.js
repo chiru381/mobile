@@ -9,6 +9,7 @@ import Header from '../components/Header'
 import ScreenWrapper from '../components/ScreenWrapper'
 import AppTextInput from '../components/TextInput'
 import { theme } from '../constants/theme'
+import apiService from '../utils/apiService'
 
 export default function Profile() {
   // avatar:
@@ -25,18 +26,70 @@ export default function Profile() {
 })
   const [formData, setFormData] = useState(profile)
 
-  const handleSaveProfile = () => {
-    setProfile(formData)
-    setIsEditing(false)
-    alert('Profile updated successfully')
+  const handleSaveProfile = async () => {
+  try {
+    const token =
+      await AsyncStorage.getItem("accessToken");
+
+    const response =
+      await apiService.updateProfile(
+        token,
+        {
+          name: formData.name,
+          email: formData.email,
+          mobile: formData.phone,
+        }
+      );
+
+    if (response.success) {
+      await AsyncStorage.setItem(
+        "user",
+        JSON.stringify(response.user)
+      );
+
+      const updatedUser = {
+        name: response.user.name,
+        email: response.user.email,
+        phone: response.user.mobile,
+        avatar: profile.avatar,
+      };
+
+      setProfile(updatedUser);
+      setFormData(updatedUser);
+
+      setIsEditing(false);
+
+      alert(response.message);
+    }
+  } catch (err) {
+    alert(err.message);
   }
+};
 
    const handleLogout = async () => {
-  await AsyncStorage.removeItem('token')
-  await AsyncStorage.removeItem('user')
 
-  router.replace('/login')
-}
+  const token =
+    await AsyncStorage.getItem("accessToken");
+
+  const deviceId =
+    await AsyncStorage.getItem("deviceId");
+
+  try {
+    await apiService.logout(
+      token,
+      deviceId
+    );
+  } catch (e) {}
+
+  await AsyncStorage.multiRemove([
+    "accessToken",
+    "refreshToken",
+    "user",
+    "deviceId",
+  ]);
+
+  router.replace("/(auth)/login");
+};
 
   useEffect(() => {
   loadUser()

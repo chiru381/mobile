@@ -1,20 +1,20 @@
-import { useRouter } from 'expo-router'
-import { useState } from 'react'
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
   Text,
   View,
-} from 'react-native'
-
-import AIToy from '../../components/AIToy'
-import AppButton from '../../components/AppButton'
-import ScreenWrapper from '../../components/ScreenWrapper'
-import AppTextInput from '../../components/TextInput'
-import { theme } from '../../constants/theme'
-import apiService from '../../utils/apiService'
-import { responsive } from '../../utils/responsive'
+} from 'react-native';
+import AIToy from '../../components/AIToy';
+import AppButton from '../../components/AppButton';
+import ScreenWrapper from '../../components/ScreenWrapper';
+import AppTextInput from '../../components/TextInput';
+import { theme } from '../../constants/theme';
+import apiService from '../../utils/apiService';
+import { responsive } from '../../utils/responsive';
 
 const isTablet = responsive.isTablet
 
@@ -82,25 +82,45 @@ export default function Register() {
     setLoading(true)
 
     try {
+
+      const deviceId = Platform.OS + "-" + Date.now();
+
       const payload = {
         name: formData.name,
         email: formData.email,
         mobile: formData.mobile,
         password: formData.password,
         mpin: formData.mpin,
-
-        // OPTIONAL BIOMETRIC IDS
-        fingerprintId: '',
-        faceId: '',
-        voiceId: '',
-      }
+        fingerprintId: "",
+        faceId: "",
+        voiceId: "",
+        deviceId,
+      };
 
       const response = await apiService.register(payload)
 
       if (response.success) {
-        alert('Registration successful')
+        await AsyncStorage.setItem(
+    "accessToken",
+    response.accessToken
+);
 
-        router.push('/(auth)/login')
+await AsyncStorage.setItem(
+    "refreshToken",
+    response.refreshToken
+);
+
+await AsyncStorage.setItem(
+    "user",
+    JSON.stringify(response.user)
+);
+
+await AsyncStorage.setItem(
+    "deviceId",
+    deviceId
+);
+
+router.replace("/(tabs)");
       } else {
         alert(response.message || 'Registration failed')
       }

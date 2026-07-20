@@ -141,7 +141,7 @@ export const apiService = {
   },
 
   updateProfile: async (token, profileData) => {
-    return await request(`${API_BASE_URL}/user/profile`, {
+    return await request(`${API_BASE_URL}/auth/update-profile`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
