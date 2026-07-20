@@ -171,7 +171,7 @@ export default function Settings() {
 
       {/* App Version */}
       <View style={styles.versionContainer}>
-        <Text style={styles.versionText}>Memory App v1.0.0</Text>
+        <Text style={styles.versionText}>Couple App v1.0.0</Text>
       </View>
     </ScreenWrapper>
   )

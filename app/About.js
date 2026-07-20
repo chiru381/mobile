@@ -50,7 +50,7 @@ if (loading) {
       <View style={styles.heroSection}>
         <Text style={styles.appEmoji}>💖</Text>
         <Text style={styles.appName}>
-          {aboutData?.appName || 'Memory App'}
+          {aboutData?.appName || 'Couple App'}
         </Text>
         <Text style={styles.tagline}>
           {aboutData?.tagline || 'Preserve Your Precious Moments'}
@@ -62,9 +62,9 @@ if (loading) {
 
       {/* Description */}
       <Card padding="lg" shadow="md" style={styles.descriptionCard}>
-        <Text style={styles.cardTitle}>About Memory App</Text>
+        <Text style={styles.cardTitle}>About Couple App</Text>
         <Text style={styles.description}>
-          {aboutData?.description || 'Memory App is your personal digital keeper of precious moments. Store, organize, and relive your favorite memories with advanced features like travel logs, and secure app lock protection.'}
+          {aboutData?.description || 'Couple App is your personal digital keeper of precious moments. Store, organize, and relive your favorite memories with advanced features like travel logs, and secure app lock protection.'}
         </Text>
       </Card>
 
@@ -120,16 +120,16 @@ if (loading) {
       <Card padding="lg" shadow="md" style={styles.creditsCard}>
         <Text style={styles.cardTitle}>Made with ❤️</Text>
         <Text style={styles.creditsText}>
-          Designed and developed by the Memory App team.
+          Designed and developed by the Couple App team.
         </Text>
         <Text style={styles.creditsText}>
-          © 2024 Memory App. All rights reserved.
+          © 2026 Couple App. All rights reserved.
         </Text>
       </Card>
 
       {/* Footer */}
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Thank you for using Memory App!</Text>
+        <Text style={styles.footerText}>Thank you for using Couple App!</Text>
       </View>
     </ScreenWrapper>
   )
