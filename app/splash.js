@@ -39,6 +39,12 @@ const splashContent = [
 
 ]
 
+const splashImages = [
+  require("../assets/splash1.jpg"),
+  require("../assets/splash2.jpg"),
+  require("../assets/splash3.jpg"),
+];
+
 export default function Splash() {
 
   const { width, height } =
@@ -46,7 +52,7 @@ export default function Splash() {
 
   const router = useRouter()
 
-  const [images, setImages] = useState([])
+  const images = splashImages;
   const [currentIndex, setCurrentIndex] = useState(0)
 
   const scaleAnim =
@@ -57,7 +63,6 @@ export default function Splash() {
 
   useEffect(() => {
 
-    loadImages()
 
     Animated.parallel([
       Animated.spring(scaleAnim, {
@@ -75,40 +80,7 @@ export default function Splash() {
 
   }, [])
 
-  const loadImages = async () => {
-
-  try {
-
-    const img1 =
-      await AsyncStorage.getItem(
-        'splashScreen1'
-      )
-
-    const img2 =
-      await AsyncStorage.getItem(
-        'splashScreen2'
-      )
-
-    const img3 =
-      await AsyncStorage.getItem(
-        'splashScreen3'
-      )
-
-    const splashImages = [
-      img1 ? JSON.parse(img1) : null,
-      img2 ? JSON.parse(img2) : null,
-      img3 ? JSON.parse(img3) : null,
-    ].filter(Boolean)
-
-    setImages(splashImages)
-
-  } catch (error) {
-
-    console.log(error)
-
-  }
-
-}
+  
 
 const handleContinue = async () => {
   try {
@@ -147,13 +119,11 @@ const handleContinue = async () => {
     setCurrentIndex(index)
   }}
   renderItem={({ item }) => (
-    <Image
-      source={{
-        uri: item.fileUrl,
-      }}
-      style={styles.backgroundImage}
-    />
-  )}
+  <Image
+    source={item}
+    style={styles.backgroundImage}
+  />
+)}
 />
 
         )
@@ -232,27 +202,20 @@ const handleContinue = async () => {
     />
   ))}
 </View>
-        {
-  currentIndex === images.length - 1 &&
-  images.length > 0 && (
-
-    <Animated.View
-      style={{
-        marginTop: 30,
-      }}
+       {currentIndex === images.length - 1 && (
+  <Animated.View
+    style={{
+      marginTop: 30,
+    }}
+  >
+    <Text
+      style={styles.continueBtn}
+      onPress={handleContinue}
     >
-
-      <Text
-        style={styles.continueBtn}
-        onPress={handleContinue}
-      >
-        Continue →
-      </Text>
-
-    </Animated.View>
-
-  )
-}
+      Continue →
+    </Text>
+  </Animated.View>
+)}
 
       </Animated.View>
 
