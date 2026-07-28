@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { useRouter } from 'expo-router'
+import { useFocusEffect, useRouter } from 'expo-router'
 import {
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -11,6 +12,7 @@ import {
   Image,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native'
 import Carousel from 'react-native-reanimated-carousel'
@@ -39,10 +41,19 @@ const splashContent = [
 
 ]
 
-const splashImages = [
-  require("../assets/splash1.jpg"),
-  require("../assets/splash2.jpg"),
-  require("../assets/splash3.jpg"),
+const defaultSplashImages = [
+  {
+    type: "local",
+    source: require("../assets/splash1.jpg"),
+  },
+  {
+    type: "local",
+    source: require("../assets/splash2.jpg"),
+  },
+  {
+    type: "local",
+    source: require("../assets/splash3.jpg"),
+  },
 ];
 
 export default function Splash() {
@@ -51,8 +62,8 @@ export default function Splash() {
   Dimensions.get('window')
 
   const router = useRouter()
-
-  const images = splashImages;
+  const carouselRef = useRef(null);
+  const [images, setImages] = useState(defaultSplashImages);
   const [currentIndex, setCurrentIndex] = useState(0)
 
   const scaleAnim =
@@ -61,8 +72,56 @@ export default function Splash() {
   const opacityAnim =
     useRef(new Animated.Value(0)).current
 
-  useEffect(() => {
+    const loadSplashImages = useCallback(async () => {
 
+    try {
+
+        const updatedImages = [...defaultSplashImages];
+
+        for (let i = 1; i <= 3; i++) {
+
+            const data = await AsyncStorage.getItem(
+                `splashScreen${i}`
+            );
+
+            if (data) {
+
+                const image = JSON.parse(data);
+
+                if (image?.fileUrl) {
+                    updatedImages[i - 1] = {
+                        type: "remote",
+                        source: image.fileUrl,
+                    };
+                }
+            }
+        }
+
+        setImages(updatedImages);
+        setCurrentIndex(0);
+
+        requestAnimationFrame(() => {
+            carouselRef.current?.scrollTo({
+                index: 0,
+                animated: false,
+            });
+        });
+
+    } catch (err) {
+
+        console.log(err);
+
+    }
+
+}, []);
+
+useFocusEffect(
+  useCallback(() => {
+    loadSplashImages();
+  }, [loadSplashImages])
+);
+
+  useEffect(() => {
 
     Animated.parallel([
       Animated.spring(scaleAnim, {
@@ -105,6 +164,7 @@ const handleContinue = async () => {
         images.length > 0 && (
 
           <Carousel
+          ref={carouselRef}
   width={width}
   height={height}
   data={images}
@@ -120,9 +180,14 @@ const handleContinue = async () => {
   }}
   renderItem={({ item }) => (
   <Image
-    source={item}
+    source={
+        item.type === "local"
+            ? item.source
+            : { uri: item.source }
+    }
+    defaultSource={require("../assets/splash1.jpg")}
     style={styles.backgroundImage}
-  />
+/>
 )}
 />
 
@@ -208,12 +273,15 @@ const handleContinue = async () => {
       marginTop: 30,
     }}
   >
-    <Text
-      style={styles.continueBtn}
-      onPress={handleContinue}
-    >
-      Continue →
+    <TouchableOpacity
+    style={styles.continueBtn}
+    onPress={handleContinue}
+    activeOpacity={0.8}
+>
+    <Text style={{color:"#fff",fontSize:18,fontWeight:"700"}}>
+        Continue →
     </Text>
+</TouchableOpacity>
   </Animated.View>
 )}
 

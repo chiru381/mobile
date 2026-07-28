@@ -103,9 +103,12 @@ useEffect(() => {
 
 const saveSplashImage = async (item, screenNumber) => {
   try {
+    if (!item?.fileUrl) return;
     await AsyncStorage.setItem(
       `splashScreen${screenNumber}`,
-      JSON.stringify(item)
+      JSON.stringify({
+        fileUrl: item.fileUrl,
+    })
     );
 
     setShowSplashModal(false);
@@ -118,13 +121,10 @@ const saveSplashImage = async (item, screenNumber) => {
       clearTimeout(toastTimer.current);
     }
 
-    setTimeout(() => {
-      setToastVisible(true);
-
-      toastTimer.current = setTimeout(() => {
+    setToastVisible(true);
+    toastTimer.current = setTimeout(() => {
         setToastVisible(false);
-      }, 2500);
-    }, 250);
+    },2500);
 
   } catch (error) {
     console.log(error);
