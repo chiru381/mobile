@@ -44,8 +44,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "65e80684-77c2-4bb6-addd-e1b57c30fd62"
+        "projectId": "e29347e6-23f7-4b97-af6f-828a346e8ee3"
       }
-    }
+    },
+    "owner": "chiranjeevikosanam"
   }
 }
