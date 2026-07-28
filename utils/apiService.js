@@ -1,6 +1,6 @@
 // API configuration and service
 
-const API_BASE_URL = 'http://10.18.244.49:5000/api'
+const API_BASE_URL = 'https://my-backend-xtb9.onrender.com/api';
 
 async function request(url, options = {}) {
   const res = await fetch(url, options)
